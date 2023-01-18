@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier:  MIT
+ * Copyright 2021 nicholascok
+ * Copyright 2023 Jorengarenar
+ */
+
 #define CHX_CTRL(C) (C & 0x1F)
 #define CHX_ALT(C) ((C & 0x00FF) | 0x0300)
 #define CHX_SHIFT(C) ((C & 0x00FF) | 0x0200)

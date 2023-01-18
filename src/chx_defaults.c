@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier:  MIT
+ * Copyright 2021 nicholascok
+ * Copyright 2023 Jorengarenar
+ */
+
 void chx_type_mode_toggle() {
 	if (CINST.mode == CHX_MODE_TYPE) CINST.mode = CHX_MODE_DEFAULT;
 	else CINST.mode = CHX_MODE_TYPE;

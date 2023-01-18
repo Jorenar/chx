@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier:  MIT
+ * Copyright 2021 nicholascok
+ * Copyright 2023 Jorengarenar
+ */
+
 #ifndef __CHX_CAOIMH__
 #define __CHX_CAOIMH__
 

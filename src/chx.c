@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier:  MIT
+ * Copyright 2021 nicholascok
+ * Copyright 2023 Jorengarenar
+ */
+
 #include "chx.h"
 #include "chx_defaults.c"
 #include "config.h"
