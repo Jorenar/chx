@@ -14,9 +14,6 @@ to remove source files:
 `cd ..`  
 `rm -r chx`  
 
-## Example
-![screenshot of chx running on ubuntu VM](./resources/capture.webp "YOOOOOOOOO")
-
 ## Default Implementations
   ### Instances
   CHX supports the ability to have several files open at once. Each open file is referred to as an instance. To create a new instance within CHX use the interpreter command `open`, and to close an instance, use the interpreter command `close`. To switch to an instance, use the interpreter command `to` (see Interpreter Commands). The next and previous instances can be accessed by ctrl + page up / ctrl + page down, respectively.
@@ -124,10 +121,10 @@ to remove source files:
 ## Adding Keybinds
   Add keybinds to either the global or command mode array in config.h using the following format:  
   `[<key>] = <func_ptr>,`  
-    
+  
   You can create your own functions by adding them to either config.h or chx_defaults.c using the following format:  
   `void <my_func>(void) { /* code... */ }`
-    
+  
   Most keys are referenced by their literal value, for example, the A key is referenced by `'a'`
   and shift + A is referenced by `'A'`. In other cases, such as for the arrow keys, keys are referenced
   using a macro:
@@ -147,7 +144,7 @@ to remove source files:
 | KEY_ENTER   | enter key     |
 | KEY_TAB     | tab key       |
   
-  For keys which are modified by alt or ctrl, put the key inside of the corresponding function. For example, alt + m is referenced by `CHX_ALT('m')`, 
+  For keys which are modified by alt or ctrl, put the key inside of the corresponding function. For example, alt + m is referenced by `CHX_ALT('m')`,
   shift + alt + m is referenced by `CHX_ALT('M')`, and shift + delete is referenced by `CHX_SHIFT(KEY_DELETE)`.
   There are four of these functions:  
   - `CHX_CTRL(<key>)`
