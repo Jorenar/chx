@@ -1,9 +1,9 @@
 PROGNAME := chx
 
+SRCDIR   := src
 BUILD    := build
 OBJDIR   := $(BUILD)/obj
 BINDIR   := $(BUILD)/bin
-SRCDIR   := src
 DEPSDIR  := $(BUILD)/deps
 
 CFLAGS   := -std=c99 -O2
@@ -15,8 +15,7 @@ LDLIBS   :=
 ASAN_FLAGS := -fsanitize=address,undefined,leak,signed-integer-overflow
 ASAN_FLAGS := $(ASAN_FLAGS) -fno-omit-frame-pointer
 
-SRCS := $(wildcard $(SRCDIR)/*.c) # temporarly unused
-SRCS := $(SRCDIR)/chx.c
+SRCS := $(wildcard $(SRCDIR)/*.c)
 OBJS := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 
 .PHONY: build clean debug compile_commands.json

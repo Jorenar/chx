@@ -3,8 +3,8 @@
  * Copyright 2023 Jorengarenar
  */
 
-#ifndef __CHX_CAOIMH__
-#define __CHX_CAOIMH__
+#ifndef EDITOR_H_
+#define EDITOR_H_
 
 #include <signal.h>
 #include <stdlib.h>
@@ -19,24 +19,6 @@
 
 #define TRUE 1
 #define FALSE 0
-
-#define KEY_UP     0x0141
-#define KEY_DOWN   0x0142
-#define KEY_RIGHT  0x0143
-#define KEY_LEFT   0x0144
-
-#define KEY_DELETE 0x0133
-#define KEY_INSERT 0x0132
-#define KEY_PG_UP  0x0135
-#define KEY_PG_DN  0x0136
-#define KEY_HOME   0x0148
-#define KEY_END    0x0146
-
-#define KEY_ENTER 0x000A
-#define KEY_TAB 0x0009
-
-#define KEY_ESCAPE      0x0100
-#define KEY_MAX_VAL 0xFFFF
 
 #define CHX_MODE_DEFAULT       0
 #define CHX_MODE_REPLACE       1
@@ -71,12 +53,6 @@
 #define COLOUR_WHITE     "\e[37m"
 #define COLOUR_GREY      "\e[90m"
 
-#define IS_PRINTABLE(C) (C > 0x1F && C < 0x7F)
-#define IS_LETTER(C) ((C ^ 0x40) < 26 || (C ^ 0x60) < 26)
-#define IS_CHAR_HEX(C) ((C ^ 0x40) < 7 || (C ^ 0x60) < 7 || (C ^ 0x30) < 10)
-#define IS_DIGIT(C) ((C ^ 0x30) < 10)
-#define IS_QUOTATION(C) (C == '\'' || C == '"')
-
 #define CINST CHX_INSTANCES[CHX_SEL_INSTANCE]
 #define BETWEEN_GE1_L2(X, A, B) (X >= min(A, B) && X < max(A, B))
 #define CHX_CONTENT_END (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * (CINST.bytes_per_row / CINST.bytes_in_group) + CINST.group_spacing)
@@ -97,17 +73,35 @@
     (byte & 0x02 ? '1' : '0'), \
     (byte & 0x01 ? '1' : '0')
 
-#define WORD(X)      *((uint16_t*) &X)
-#define DWORD(X)     *((uint32_t*) &X)
-#define INT8_AT(X)   *((int8_t  *) (X))
-#define INT16_AT(X)  *((int16_t *) (X))
-#define INT32_AT(X)  *((int32_t *) (X))
-#define INT64_AT(X)  *((int64_t *) (X))
-#define UINT8_AT(X)  *((uint8_t *) (X))
-#define UINT16_AT(X) *((uint16_t*) (X))
-#define UINT32_AT(X) *((uint32_t*) (X))
-#define UINT64_AT(X) *((uint64_t*) (X))
-#define WCHAR_AT(X)  (wchar_t) *((int16_t*) (X))
+void fvoid();
+
+struct chx_finfo chx_import(char* fpath);
+void chx_export(char* fpath);
+
+void chx_config_layout(char _np, char** _pl);
+void chx_config_layout_global(char _np, char** _pl);
+
+void chx_add_instance(char* fpath);
+void chx_remove_instance(int _n);
+
+struct chx_key chx_get_key();
+char chx_get_char();
+void chx_get_str();
+
+void chx_scroll_up(int _n);
+void chx_scroll_down(int _n);
+
+void chx_print_status();
+void chx_update_cursor();
+void chx_swap_endianness();
+void chx_draw_contents();
+void chx_draw_sidebar();
+void chx_draw_extra();
+void chx_draw_header();
+void chx_draw_all();
+void chx_redraw_line();
+
+void chx_main();
 
 union chx_last_action_ptr {
     void (*execute_void)(void);
@@ -120,16 +114,6 @@ struct chx_last_action {
     char** params;
     char num_params;
     char type;
-};
-
-struct chx_void_command {
-    void (*execute)(void);
-    char* str;
-};
-
-struct chx_command {
-    void (*execute)(char _np, char** _pl);
-    char* str;
 };
 
 struct chx_cursor {
@@ -177,60 +161,37 @@ struct CHX_INSTANCE {
     char show_preview;
 };
 
-struct CHX_INSTANCE* CHX_INSTANCES;
-int CHX_CUR_MAX_INSTANCE;
-int CHX_SEL_INSTANCE;
+extern struct CHX_INSTANCE* CHX_INSTANCES;
+extern int CHX_CUR_MAX_INSTANCE;
+extern int CHX_SEL_INSTANCE;
 
-void (*chx_keybinds_global[])(void);
-void (*chx_keybinds_mode_command[])(void);
-void* func_exceptions[];
-struct chx_command chx_commands[];
+extern void* func_exceptions[];
 
-void fvoid() {};
 
-struct chx_finfo chx_import(char* fpath);
-void chx_export(char* fpath);
+/* OPTIMISATION SETTINGS (COMMENT TO DISABLE) */
+#define CHX_SCROLL_SUPPORT
 
-void chx_config_layout(char _np, char** _pl);
-void chx_config_layout_global(char _np, char** _pl);
+/* GENERAL SETTINGS */
+#define CHX_DEFAULT_ENDIANNESS         CHX_LITTLE_ENDIAN
+#define CHX_SHOW_PREVIEW_ON_STARTUP    TRUE // can be overridden if screen is small
+#define CHX_SHOW_INSPECTOR_ON_STARTUP  TRUE // can be overridden if screen is small
+#define CHX_MAX_NUM_INSTANCES             8 // max number of files open at a time
+#define CHX_MAX_NUM_PARAMS                8 // max number of parameters for interpreter commands
 
-void chx_add_instance(char* fpath);
-void chx_remove_instance(int _n);
-void chx_prompt_command();
+/* LAYOUT SETTINGS */
+#define CHX_FRAME_COLOUR        COLOUR_CYAN
+#define CHX_UNSAVED_COLOUR      "\033[38;2;0;240;240m"
+#define CHX_ASCII_CUR_FORMAT    FORMAT_UNDERLINE
+#define CHX_ASCII_SELECT_FORMAT FORMAT_REVERSE
+#define CHX_SELECT_FORMAT       FORMAT_REVERSE
 
-struct chx_key chx_get_key();
-char chx_get_char();
-void chx_get_str();
+#define CHX_BYTES_PER_ROW   16
+#define CHX_BYTES_IN_GROUP   1
+#define CHX_GROUP_SPACING    1
+#define CHX_MIN_ROW_NUM_LEN  4
 
-void chx_scroll_up(int _n);
-void chx_scroll_down(int _n);
+/* FEATURES (COMMENT TO DISABLE) */
+#define CHX_RESIZE_FILE_ON_BACKSPACE
+#define CHX_RESIZE_FILE_ON_INSERTION
 
-void chx_print_status();
-void chx_update_cursor();
-void chx_swap_endianness();
-void chx_draw_contents();
-void chx_draw_sidebar();
-void chx_draw_extra();
-void chx_draw_header();
-void chx_draw_all();
-void chx_redraw_line();
-
-void chx_set_hexchar(char _c);
-void chx_type_hexchar(char _c);
-void chx_insert_hexchar(char _c);
-void chx_delete_hexchar();
-void chx_backspace_hexchar();
-void chx_remove_hexchar();
-void chx_erase_hexchar();
-
-void chx_set_ascii(char _c);
-void chx_type_ascii(char _c);
-void chx_insert_ascii(char _c);
-void chx_delete_ascii();
-void chx_backspace_ascii();
-void chx_remove_ascii();
-void chx_erase_ascii();
-
-void chx_main();
-
-#endif /* ifndef __CHX_CAOIMH__ */
+#endif // EDITOR_H_

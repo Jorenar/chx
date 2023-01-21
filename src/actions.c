@@ -3,6 +3,12 @@
  * Copyright 2023 Jorengarenar
  */
 
+#include "actions.h"
+
+#include "editor.h"
+#include "interpreter.h"
+#include "utils.h"
+
 void chx_type_mode_toggle()
 {
     if (CINST.mode == CHX_MODE_TYPE) {
@@ -286,149 +292,6 @@ void chx_set_endianness_global(char _np, char** _pl)
         cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
         fflush(stdout);
     }
-}
-
-long chx_abs(long _n)
-{
-    return _n + 2 * _n * -(_n < 0);
-}
-
-long min(long _a, long _b)
-{
-    if (_a < _b) {
-        return _a;
-    }
-    return _b;
-}
-
-long max(long _a, long _b)
-{
-    if (_a > _b) {
-        return _a;
-    }
-    return _b;
-}
-
-char* memfork(char* _p, int _l)
-{
-    char* np = malloc(_l);
-    for (int i = 0; i < _l; i++) {
-        np[i] = _p[i];
-    }
-    return np;
-}
-
-char* recalloc(char* _p, long _o, long _n)
-{
-    char* ptr = calloc(1, _n);
-    for (int i = 0; i < min(_o, _n); i++) {
-        ptr[i] = _p[i];
-    }
-    free(_p);
-    return ptr;
-}
-
-int chx_count_digits(long _n)
-{
-    int c = 0;
-    while ((_n /= 16) >= 1) {
-        c++;
-    }
-    return ++c;
-}
-
-char str_is_num(char* _s)
-{
-    if (!_s[0]) {
-        return 0;
-    }
-    for (int i = 0; _s[i]; i++) {
-        if (!IS_DIGIT(_s[i])) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-char str_is_hex(char* _s)
-{
-    if (!(_s[0] == '0' && _s[1] == 'x')) {
-        return 0;
-    }
-    for (int i = 2; _s[i]; i++) {
-        if (!IS_CHAR_HEX(_s[i])) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int str_to_num(char* _s)
-{
-    long total = 0;
-    for (int i = 0; _s[i]; i++) {
-        total = total * 10 + _s[i] - 0x30;
-    }
-    return total;
-}
-
-long str_to_hex(char* _s)
-{
-    long total = 0;
-    for (int i = 2; _s[i]; i++) {
-        total *= 16;
-        if ((_s[i] ^ 0x60) < 7) {
-            _s[i] -= 32;
-        }
-        total += (_s[i] > 0x40) ? _s[i] - 0x37 : _s[i] - 0x30;
-    }
-    return total;
-}
-
-int str_len(char* _s)
-{
-    int c = 0;
-    while (_s[c]) {
-        c++;
-    }
-    return c;
-}
-
-char cmp_str(char* _a, char* _b)
-{
-    for (int i = 0; _a[i] || _b[i]; i++) {
-        if (_a[i] != _b[i]) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-char* chx_extract_param(char* _s, int _n)
-{
-    int n;
-    // extract param
-    char* param = _s;
-    for (int i = 0; i < _n; i++) {
-        for (n = 0; param[n] > 0x20 && param[n] < 0x7F; n++);
-        param += n + 1;
-    }
-
-    // terminate param at first non-typable char or space (' ', '\n', '\t', etc.)
-    char qf = 0;
-    for (n = 0; param[n] > 0x20 - qf && param[n] < 0x7F; n++) {
-        if (IS_QUOTATION(param[n])) {
-            qf = !qf;
-        }
-    }
-
-    if (IS_QUOTATION(param[0]) && IS_QUOTATION(param[n - 1])) {
-        *(param++ + n - 1) = 0;
-    } else {
-        param[n] = 0;
-    }
-
-    return param;
 }
 
 void chx_resize_file(long _n)
@@ -1009,4 +872,323 @@ void chx_quit()
     }
 
     chx_exit();
+}
+
+void chx_prompt_command()
+{
+    // setup user input buffer
+    char* usrin = calloc(1, 256);
+
+    // command interpreter recieve user input
+    cur_set(0, CINST.height);
+    printf("\e[2K: ");
+    fflush(stdout);
+
+    chx_get_str(usrin, 256);
+
+    // extract command and its parameters
+    char np = 0;
+    char* cmd = chx_extract_param(usrin, 0);
+    char** p = malloc(CHX_MAX_NUM_PARAMS * sizeof (void*));
+
+    for (int i = 0; i < CHX_MAX_NUM_PARAMS; i++) {
+        p[i] = chx_extract_param(usrin, i + 1);
+        if (p[i][0]) {
+            np++;
+        }
+    }
+
+    // lookup entered command and execute procedure
+    // for numbers (decimal or hex, prefixed with '0x') jump to the corresponging byte
+    if (cmd[0]) {
+        if (str_is_num(cmd)) {
+            CINST.cursor.pos = str_to_num(cmd);
+            CINST.cursor.sbpos = 0;
+            chx_update_cursor();
+            chx_draw_all();
+        } else if (str_is_hex(cmd)) {
+            CINST.cursor.pos = str_to_hex(cmd);
+            CINST.cursor.sbpos = 0;
+            chx_update_cursor();
+            chx_draw_all();
+        } else {
+            for (int i = 0; chx_void_commands[i].str; i++) {
+                if (cmp_str(chx_void_commands[i].str, cmd)) {
+                    chx_void_commands[i].execute();
+                    CINST.last_action.action.execute_void = chx_void_commands[i].execute;
+                    CINST.last_action.type = 0;
+                    break;
+                }
+            }
+
+            for (int i = 0; chx_commands[i].str; i++) {
+                if (cmp_str(chx_commands[i].str, cmd)) {
+                    chx_commands[i].execute(np, p);
+                    free(CINST.last_action.params_raw);
+                    free(CINST.last_action.params);
+                    CINST.last_action.action.execute_cmmd = chx_commands[i].execute;
+                    CINST.last_action.params_raw = usrin;
+                    CINST.last_action.num_params = np;
+                    CINST.last_action.params = p;
+                    CINST.last_action.type = 1;
+                    break;
+                }
+            }
+        }
+    }
+
+    // redraw elements
+    chx_draw_all();
+}
+
+void chx_set_hexchar(char _c)
+{
+    if (!IS_CHAR_HEX(_c)) {
+        return;                   // only accept hex characters
+    }
+    if ((_c ^ 0x60) < 7) {
+        _c -= 32;                  // ensure everything is upper-case
+
+    }
+    char nullkey[2] = { _c, 0 };
+
+    // resize file if typing past current file length
+    if (CINST.cursor.pos >= CINST.fdata.len) {
+        chx_resize_file(CINST.cursor.pos + 1);
+        chx_draw_contents();
+    }
+
+    // update stored file data
+    CINST.fdata.data[CINST.cursor.pos] &= 0x0F << (CINST.cursor.sbpos * 4);
+    CINST.fdata.data[CINST.cursor.pos] |= strtol(nullkey, NULL, 16) << (!CINST.cursor.sbpos * 4);
+
+    // highlight unsaved change
+    CINST.saved = 0;
+    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
+
+    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
+    chx_update_cursor();
+}
+
+void chx_type_hexchar(char _c)
+{
+    chx_set_hexchar(_c);
+    chx_cursor_move_right();
+}
+
+void chx_insert_hexchar_old(char _c)
+{
+    chx_set_hexchar(_c);
+    if (CINST.cursor.sbpos) {
+        chx_resize_file(CINST.fdata.len + 1);
+        for (int i = CINST.fdata.len - 1; i > CINST.cursor.pos; i--) {
+            CINST.fdata.data[i] = CINST.fdata.data[i - 1];
+        }
+        CINST.fdata.data[CINST.cursor.pos + 1] = 0;
+        chx_draw_all();
+    }
+    chx_cursor_move_right();
+}
+
+void chx_insert_hexchar(char _c)
+{
+#ifdef CHX_RESIZE_FILE_ON_INSERTION
+    CINST.parity = !CINST.parity;
+    if (CINST.parity && CINST.cursor.pos < CINST.fdata.len) {
+        chx_resize_file(CINST.fdata.len + 1);
+    }
+#endif
+
+    // resize file if typing past current file length
+    if (CINST.cursor.pos >= CINST.fdata.len) {
+        chx_resize_file(CINST.cursor.pos + 1);
+        chx_draw_contents();
+    }
+
+    // shift data after cursor by 4 bits
+    unsigned char cr = 0;
+
+    for (int i = CINST.fdata.len - 1; i > CINST.cursor.pos - !CINST.cursor.sbpos; i--) {
+        cr = CINST.fdata.data[i - 1] & 0x0F;
+        CINST.fdata.data[i] >>= 4;
+        CINST.fdata.data[i] |= cr << 4;
+    }
+
+    // hightlight as unsaved change
+    CINST.saved = 0;
+    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
+
+    // type hexchar and move cursor
+    chx_set_hexchar(_c);
+    chx_cursor_move_right();
+
+    chx_draw_all();
+    fflush(stdout);
+}
+
+void chx_delete_hexchar()
+{
+    // only delete if cursor is before EOF
+    if (CINST.cursor.pos < CINST.fdata.len) {
+        if (CINST.cursor.sbpos) {
+            CINST.fdata.data[CINST.cursor.pos] &= 0xF0;
+        } else {
+            CINST.fdata.data[CINST.cursor.pos] &= 0x0F;
+        }
+    }
+
+    // hightlight as unsaved change
+    CINST.saved = 0;
+    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
+
+    if (CINST.show_preview) {
+        chx_draw_sidebar();
+    }
+
+    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
+    fflush(stdout);
+}
+
+void chx_backspace_hexchar()
+{
+    chx_cursor_move_left();
+    chx_delete_hexchar();
+}
+
+void chx_remove_hexchar()
+{
+    // only remove characters in the file
+    if (CINST.cursor.pos < CINST.fdata.len) {
+        CINST.saved = 0;
+
+        // shift data after cursor by 4 bits
+        if (CINST.cursor.sbpos) {
+            CINST.fdata.data[CINST.cursor.pos] &= 0xF0;
+        } else {
+            CINST.fdata.data[CINST.cursor.pos] <<= 4;
+        }
+
+        unsigned char cr = 0;
+
+        for (int i = CINST.cursor.pos; i < CINST.fdata.len - 1; i++) {
+            cr = CINST.fdata.data[i + 1] & 0xF0;
+            CINST.fdata.data[i] |= cr >> 4;
+            CINST.fdata.data[i + 1] <<= 4;
+        }
+
+#ifdef CHX_RESIZE_FILE_ON_BACKSPACE
+        CINST.parity = !CINST.parity;
+        if (!CINST.parity) {
+            chx_resize_file(CINST.fdata.len - 1);
+        }
+#endif
+
+        chx_draw_all();
+        fflush(stdout);
+    } else if (CINST.cursor.pos == CINST.fdata.len - 1 && CINST.cursor.sbpos) {
+        // if cursor is just after EOF, resize file to remove last byte
+        chx_resize_file(CINST.fdata.len - 1);
+        CINST.cursor.sbpos = 0;
+    }
+}
+
+void chx_erase_hexchar()
+{
+    if (CINST.cursor.pos || CINST.cursor.sbpos) {
+        chx_cursor_move_left();
+        chx_remove_hexchar();
+    }
+}
+
+void chx_set_ascii(char _c)
+{
+    // resize file if typing past current file length
+    if (CINST.cursor.pos >= CINST.fdata.len) {
+        chx_resize_file(CINST.cursor.pos + 1);
+        chx_draw_contents();
+    }
+
+    // set char
+    CINST.fdata.data[CINST.cursor.pos] = _c;
+
+    // highlight unsaved change
+    CINST.saved = 0;
+    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
+
+    if (CINST.show_preview) {
+        chx_draw_sidebar();
+    }
+
+    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
+    fflush(stdout);
+}
+
+void chx_type_ascii(char _c)
+{
+    chx_set_ascii(_c);
+    chx_cursor_next_byte();
+}
+
+void chx_insert_ascii(char _c)
+{
+    // resize file
+    chx_resize_file(CINST.fdata.len + 1);
+
+    // shift bytes after cursor right by one
+    for (int i = CINST.fdata.len - 1; i > CINST.cursor.pos; i--) {
+        CINST.fdata.data[i] = CINST.fdata.data[i - 1];
+    }
+
+    // type char
+    chx_type_ascii(_c);
+
+    // update screen
+    chx_draw_all();
+    fflush(stdout);
+}
+
+void chx_delete_ascii()
+{
+    // only delete if cursor is before EOF
+    if (CINST.cursor.pos < CINST.fdata.len) {
+        chx_set_ascii(0);
+
+        // highlight unsaved change
+        CINST.saved = 0;
+        CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
+    }
+}
+
+void chx_backspace_ascii()
+{
+    chx_cursor_prev_byte();
+    chx_delete_ascii();
+}
+
+void chx_remove_ascii()
+{
+    // only remove characters in the file
+    if (CINST.cursor.pos < CINST.fdata.len) {
+        // shift bytes after cursor left by one
+        CINST.cursor.sbpos = 0;
+        for (int i = CINST.cursor.pos; i < CINST.fdata.len - 1; i++) {
+            CINST.fdata.data[i] = CINST.fdata.data[i + 1];
+        }
+
+        // resize file
+        chx_resize_file(CINST.fdata.len - 1);
+
+        // redraw contents and update cursor
+        chx_draw_all();
+        fflush(stdout);
+    }
+}
+
+void chx_erase_ascii()
+{
+    if (CINST.cursor.pos) {
+        CINST.cursor.sbpos = 0;
+        chx_cursor_prev_byte();
+        chx_remove_ascii();
+    }
 }

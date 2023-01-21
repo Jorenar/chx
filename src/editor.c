@@ -3,9 +3,50 @@
  * Copyright 2023 Jorengarenar
  */
 
-#include "chx.h"
-#include "chx_defaults.c"
-#include "config.h"
+#include "editor.h"
+
+#include "interpreter.h"
+#include "actions.h"
+#include "keybinds.h"
+#include "utils.h"
+
+struct CHX_INSTANCE* CHX_INSTANCES;
+int CHX_CUR_MAX_INSTANCE;
+int CHX_SEL_INSTANCE;
+
+/* FUNCTIONS TO EXCLUDE FROM ACTION HISTORY */
+void* func_exceptions[] = {
+    chx_cursor_move_up,
+    chx_cursor_move_down,
+    chx_cursor_move_right,
+    chx_cursor_move_left,
+    chx_cursor_select_up,
+    chx_cursor_select_down,
+    chx_cursor_select_right,
+    chx_cursor_select_left,
+    chx_cursor_next_byte,
+    chx_cursor_prev_byte,
+    chx_execute_last_action,
+    chx_prompt_command,
+    chx_mode_set_type_ascii,
+    chx_mode_set_type,
+    chx_mode_set_insert_ascii,
+    chx_mode_set_insert,
+    chx_mode_set_replace_ascii,
+    chx_mode_set_replace,
+    chx_remove_selected,
+    chx_delete_selected,
+    chx_erase_hexchar,
+    chx_remove_hexchar,
+    chx_erase_ascii,
+    chx_remove_ascii,
+    chx_open_instance,
+    chx_close_instance,
+    chx_set_inst,
+    chx_switch_file,
+};
+
+void fvoid() {};
 
 struct chx_finfo chx_import(char* fpath)
 {
@@ -385,416 +426,6 @@ void chx_draw_sidebar()
     printf("\e[0m%-*c", CINST.group_spacing, ' ');
 }
 
-void chx_prompt_command()
-{
-    // setup user input buffer
-    char* usrin = calloc(1, 256);
-
-    // command interpreter recieve user input
-    cur_set(0, CINST.height);
-    printf("\e[2K: ");
-    fflush(stdout);
-
-    chx_get_str(usrin, 256);
-
-    // extract command and its parameters
-    char np = 0;
-    char* cmd = chx_extract_param(usrin, 0);
-    char** p = malloc(CHX_MAX_NUM_PARAMS * sizeof (void*));
-
-    for (int i = 0; i < CHX_MAX_NUM_PARAMS; i++) {
-        p[i] = chx_extract_param(usrin, i + 1);
-        if (p[i][0]) {
-            np++;
-        }
-    }
-
-    // lookup entered command and execute procedure
-    // for numbers (decimal or hex, prefixed with '0x') jump to the corresponging byte
-    if (cmd[0]) {
-        if (str_is_num(cmd)) {
-            CINST.cursor.pos = str_to_num(cmd);
-            CINST.cursor.sbpos = 0;
-            chx_update_cursor();
-            chx_draw_all();
-        } else if (str_is_hex(cmd)) {
-            CINST.cursor.pos = str_to_hex(cmd);
-            CINST.cursor.sbpos = 0;
-            chx_update_cursor();
-            chx_draw_all();
-        } else {
-            for (int i = 0; chx_void_commands[i].str; i++) {
-                if (cmp_str(chx_void_commands[i].str, cmd)) {
-                    chx_void_commands[i].execute();
-                    CINST.last_action.action.execute_void = chx_void_commands[i].execute;
-                    CINST.last_action.type = 0;
-                    break;
-                }
-            }
-
-            for (int i = 0; chx_commands[i].str; i++) {
-                if (cmp_str(chx_commands[i].str, cmd)) {
-                    chx_commands[i].execute(np, p);
-                    free(CINST.last_action.params_raw);
-                    free(CINST.last_action.params);
-                    CINST.last_action.action.execute_cmmd = chx_commands[i].execute;
-                    CINST.last_action.params_raw = usrin;
-                    CINST.last_action.num_params = np;
-                    CINST.last_action.params = p;
-                    CINST.last_action.type = 1;
-                    break;
-                }
-            }
-        }
-    }
-
-    // redraw elements
-    chx_draw_all();
-}
-
-void chx_set_hexchar(char _c)
-{
-    if (!IS_CHAR_HEX(_c)) {
-        return;                   // only accept hex characters
-    }
-    if ((_c ^ 0x60) < 7) {
-        _c -= 32;                  // ensure everything is upper-case
-
-    }
-    char nullkey[2] = { _c, 0 };
-
-    // resize file if typing past current file length
-    if (CINST.cursor.pos >= CINST.fdata.len) {
-        chx_resize_file(CINST.cursor.pos + 1);
-        chx_draw_contents();
-    }
-
-    // update stored file data
-    CINST.fdata.data[CINST.cursor.pos] &= 0x0F << (CINST.cursor.sbpos * 4);
-    CINST.fdata.data[CINST.cursor.pos] |= strtol(nullkey, NULL, 16) << (!CINST.cursor.sbpos * 4);
-
-    // highlight unsaved change
-    CINST.saved = 0;
-    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
-
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    chx_update_cursor();
-}
-
-void chx_type_hexchar(char _c)
-{
-    chx_set_hexchar(_c);
-    chx_cursor_move_right();
-}
-
-void chx_insert_hexchar_old(char _c)
-{
-    chx_set_hexchar(_c);
-    if (CINST.cursor.sbpos) {
-        chx_resize_file(CINST.fdata.len + 1);
-        for (int i = CINST.fdata.len - 1; i > CINST.cursor.pos; i--) {
-            CINST.fdata.data[i] = CINST.fdata.data[i - 1];
-        }
-        CINST.fdata.data[CINST.cursor.pos + 1] = 0;
-        chx_draw_all();
-    }
-    chx_cursor_move_right();
-}
-
-void chx_insert_hexchar(char _c)
-{
-#ifdef CHX_RESIZE_FILE_ON_INSERTION
-    CINST.parity = !CINST.parity;
-    if (CINST.parity && CINST.cursor.pos < CINST.fdata.len) {
-        chx_resize_file(CINST.fdata.len + 1);
-    }
-#endif
-
-    // resize file if typing past current file length
-    if (CINST.cursor.pos >= CINST.fdata.len) {
-        chx_resize_file(CINST.cursor.pos + 1);
-        chx_draw_contents();
-    }
-
-    // shift data after cursor by 4 bits
-    unsigned char cr = 0;
-
-    for (int i = CINST.fdata.len - 1; i > CINST.cursor.pos - !CINST.cursor.sbpos; i--) {
-        cr = CINST.fdata.data[i - 1] & 0x0F;
-        CINST.fdata.data[i] >>= 4;
-        CINST.fdata.data[i] |= cr << 4;
-    }
-
-    // hightlight as unsaved change
-    CINST.saved = 0;
-    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
-
-    // type hexchar and move cursor
-    chx_set_hexchar(_c);
-    chx_cursor_move_right();
-
-    chx_draw_all();
-    fflush(stdout);
-}
-
-void chx_delete_hexchar()
-{
-    // only delete if cursor is before EOF
-    if (CINST.cursor.pos < CINST.fdata.len) {
-        if (CINST.cursor.sbpos) {
-            CINST.fdata.data[CINST.cursor.pos] &= 0xF0;
-        } else {
-            CINST.fdata.data[CINST.cursor.pos] &= 0x0F;
-        }
-    }
-
-    // hightlight as unsaved change
-    CINST.saved = 0;
-    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
-
-    if (CINST.show_preview) {
-        chx_draw_sidebar();
-    }
-
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    fflush(stdout);
-}
-
-void chx_backspace_hexchar()
-{
-    chx_cursor_move_left();
-    chx_delete_hexchar();
-}
-
-void chx_remove_hexchar()
-{
-    // only remove characters in the file
-    if (CINST.cursor.pos < CINST.fdata.len) {
-        CINST.saved = 0;
-
-        // shift data after cursor by 4 bits
-        if (CINST.cursor.sbpos) {
-            CINST.fdata.data[CINST.cursor.pos] &= 0xF0;
-        } else {
-            CINST.fdata.data[CINST.cursor.pos] <<= 4;
-        }
-
-        unsigned char cr = 0;
-
-        for (int i = CINST.cursor.pos; i < CINST.fdata.len - 1; i++) {
-            cr = CINST.fdata.data[i + 1] & 0xF0;
-            CINST.fdata.data[i] |= cr >> 4;
-            CINST.fdata.data[i + 1] <<= 4;
-        }
-
-#ifdef CHX_RESIZE_FILE_ON_BACKSPACE
-        CINST.parity = !CINST.parity;
-        if (!CINST.parity) {
-            chx_resize_file(CINST.fdata.len - 1);
-        }
-#endif
-
-        chx_draw_all();
-        fflush(stdout);
-    } else if (CINST.cursor.pos == CINST.fdata.len - 1 && CINST.cursor.sbpos) {
-        // if cursor is just after EOF, resize file to remove last byte
-        chx_resize_file(CINST.fdata.len - 1);
-        CINST.cursor.sbpos = 0;
-    }
-}
-
-void chx_erase_hexchar()
-{
-    if (CINST.cursor.pos || CINST.cursor.sbpos) {
-        chx_cursor_move_left();
-        chx_remove_hexchar();
-    }
-}
-
-void chx_set_ascii(char _c)
-{
-    // resize file if typing past current file length
-    if (CINST.cursor.pos >= CINST.fdata.len) {
-        chx_resize_file(CINST.cursor.pos + 1);
-        chx_draw_contents();
-    }
-
-    // set char
-    CINST.fdata.data[CINST.cursor.pos] = _c;
-
-    // highlight unsaved change
-    CINST.saved = 0;
-    CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
-
-    if (CINST.show_preview) {
-        chx_draw_sidebar();
-    }
-
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    fflush(stdout);
-}
-
-void chx_type_ascii(char _c)
-{
-    chx_set_ascii(_c);
-    chx_cursor_next_byte();
-}
-
-void chx_insert_ascii(char _c)
-{
-    // resize file
-    chx_resize_file(CINST.fdata.len + 1);
-
-    // shift bytes after cursor right by one
-    for (int i = CINST.fdata.len - 1; i > CINST.cursor.pos; i--) {
-        CINST.fdata.data[i] = CINST.fdata.data[i - 1];
-    }
-
-    // type char
-    chx_type_ascii(_c);
-
-    // update screen
-    chx_draw_all();
-    fflush(stdout);
-}
-
-void chx_delete_ascii()
-{
-    // only delete if cursor is before EOF
-    if (CINST.cursor.pos < CINST.fdata.len) {
-        chx_set_ascii(0);
-
-        // highlight unsaved change
-        CINST.saved = 0;
-        CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
-    }
-}
-
-void chx_backspace_ascii()
-{
-    chx_cursor_prev_byte();
-    chx_delete_ascii();
-}
-
-void chx_remove_ascii()
-{
-    // only remove characters in the file
-    if (CINST.cursor.pos < CINST.fdata.len) {
-        // shift bytes after cursor left by one
-        CINST.cursor.sbpos = 0;
-        for (int i = CINST.cursor.pos; i < CINST.fdata.len - 1; i++) {
-            CINST.fdata.data[i] = CINST.fdata.data[i + 1];
-        }
-
-        // resize file
-        chx_resize_file(CINST.fdata.len - 1);
-
-        // redraw contents and update cursor
-        chx_draw_all();
-        fflush(stdout);
-    }
-}
-
-void chx_erase_ascii()
-{
-    if (CINST.cursor.pos) {
-        CINST.cursor.sbpos = 0;
-        chx_cursor_prev_byte();
-        chx_remove_ascii();
-    }
-}
-
-void chx_main()
-{
-    for (struct chx_key key;; key = chx_get_key()) {
-        // execute key sequence, if available
-        if (chx_keybinds_global[WORD(key)]) {
-            chx_keybinds_global[WORD(key)]();
-
-            // make sure function is not in exclusion list, if so then set the last action to the function pointer
-            char is_valid = 1;
-            for (int i = 0; i < sizeof (func_exceptions) / sizeof (void*); i++) {
-                if (chx_keybinds_global[WORD(key)] == func_exceptions[i]) {
-                    is_valid = 0;
-                }
-            }
-            if (is_valid) {
-                CINST.last_action.action.execute_void = chx_keybinds_global[WORD(key)];
-                CINST.last_action.type = 0;
-            }
-        }
-
-        switch (CINST.mode) {
-            default:
-            case CHX_MODE_DEFAULT:
-                // execute key sequence, if available
-                if (chx_keybinds_mode_command[WORD(key)]) {
-                    chx_keybinds_mode_command[WORD(key)]();
-
-                    // make sure function is not in exclusion list, if so then set the last action to the function pointer
-                    char is_valid = 1;
-                    for (int i = 0; i < sizeof (func_exceptions) / sizeof (void*); i++) {
-                        if (chx_keybinds_mode_command[WORD(key)] == func_exceptions[i]) {
-                            is_valid = 0;
-                        }
-                    }
-                    if (is_valid) {
-                        CINST.last_action.action.execute_void = chx_keybinds_mode_command[WORD(key)];
-                        CINST.last_action.type = 0;
-                    }
-                }
-                break;
-            case CHX_MODE_INSERT:
-                if (IS_CHAR_HEX(WORD(key))) {
-                    chx_insert_hexchar(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_erase_hexchar();
-                }
-                break;
-            case CHX_MODE_REPLACE:
-                if (IS_CHAR_HEX(WORD(key))) {
-                    chx_set_hexchar(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_delete_hexchar();
-                }
-                break;
-            case CHX_MODE_TYPE:
-                if (IS_CHAR_HEX(WORD(key))) {
-                    chx_type_hexchar(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_backspace_hexchar();
-                }
-                break;
-            case CHX_MODE_INSERT_ASCII:
-                if (IS_PRINTABLE(WORD(key))) {
-                    chx_insert_ascii(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_erase_ascii();
-                }
-                break;
-            case CHX_MODE_REPLACE_ASCII:
-                if (IS_PRINTABLE(WORD(key))) {
-                    chx_set_ascii(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_delete_ascii();
-                }
-                break;
-            case CHX_MODE_TYPE_ASCII:
-                if (IS_PRINTABLE(WORD(key))) {
-                    chx_type_ascii(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_backspace_ascii();
-                }
-                break;
-        }
-
-        // clear selection if cursor is not at the end of the selection (meaning the user is no longer selecting and the cursor has moved)
-        if (CINST.selected && CINST.cursor.pos != CINST.sel_stop) {
-            chx_clear_selection();
-        }
-    }
-}
-
 struct chx_key chx_get_key()
 {
     struct chx_key key;
@@ -986,75 +617,93 @@ void chx_remove_instance(int _n)
     }
 }
 
-int main(int argc, char** argv)
+void chx_main()
 {
-    // allow printing of wide chars
-    setlocale(LC_ALL, "");
+    for (struct chx_key key;; key = chx_get_key()) {
+        // execute key sequence, if available
+        if (chx_keybinds_global[WORD(key)]) {
+            chx_keybinds_global[WORD(key)]();
 
-    // command-line interface
-    if (argc < 2) {
-        printf("no filepath specified: see chx --help for more information.\n");
-        return 0;
-    } else {
-        if (cmp_str(argv[1], "--help") || cmp_str(argv[1], "-help")) {
-            printf("usage: chx <filepath>\n");
-            return 0;
-        } else if (cmp_str(argv[1], "-v") || cmp_str(argv[1], "--version")) {
-            printf("CAOIMH HEX EDITOR version 1.0.1\n");
-            return 0;
+            // make sure function is not in exclusion list, if so then set the last action to the function pointer
+            char is_valid = 1;
+            for (int i = 0; i < sizeof (func_exceptions) / sizeof (void*); i++) {
+                if (chx_keybinds_global[WORD(key)] == func_exceptions[i]) {
+                    is_valid = 0;
+                }
+            }
+            if (is_valid) {
+                CINST.last_action.action.execute_void = chx_keybinds_global[WORD(key)];
+                CINST.last_action.type = 0;
+            }
+        }
+
+        switch (CINST.mode) {
+            default:
+            case CHX_MODE_DEFAULT:
+                // execute key sequence, if available
+                if (chx_keybinds_mode_command[WORD(key)]) {
+                    chx_keybinds_mode_command[WORD(key)]();
+
+                    // make sure function is not in exclusion list, if so then set the last action to the function pointer
+                    char is_valid = 1;
+                    for (int i = 0; i < sizeof (func_exceptions) / sizeof (void*); i++) {
+                        if (chx_keybinds_mode_command[WORD(key)] == func_exceptions[i]) {
+                            is_valid = 0;
+                        }
+                    }
+                    if (is_valid) {
+                        CINST.last_action.action.execute_void = chx_keybinds_mode_command[WORD(key)];
+                        CINST.last_action.type = 0;
+                    }
+                }
+                break;
+            case CHX_MODE_INSERT:
+                if (IS_CHAR_HEX(WORD(key))) {
+                    chx_insert_hexchar(WORD(key));
+                } else if (WORD(key) == 0x7F) {
+                    chx_erase_hexchar();
+                }
+                break;
+            case CHX_MODE_REPLACE:
+                if (IS_CHAR_HEX(WORD(key))) {
+                    chx_set_hexchar(WORD(key));
+                } else if (WORD(key) == 0x7F) {
+                    chx_delete_hexchar();
+                }
+                break;
+            case CHX_MODE_TYPE:
+                if (IS_CHAR_HEX(WORD(key))) {
+                    chx_type_hexchar(WORD(key));
+                } else if (WORD(key) == 0x7F) {
+                    chx_backspace_hexchar();
+                }
+                break;
+            case CHX_MODE_INSERT_ASCII:
+                if (IS_PRINTABLE(WORD(key))) {
+                    chx_insert_ascii(WORD(key));
+                } else if (WORD(key) == 0x7F) {
+                    chx_erase_ascii();
+                }
+                break;
+            case CHX_MODE_REPLACE_ASCII:
+                if (IS_PRINTABLE(WORD(key))) {
+                    chx_set_ascii(WORD(key));
+                } else if (WORD(key) == 0x7F) {
+                    chx_delete_ascii();
+                }
+                break;
+            case CHX_MODE_TYPE_ASCII:
+                if (IS_PRINTABLE(WORD(key))) {
+                    chx_type_ascii(WORD(key));
+                } else if (WORD(key) == 0x7F) {
+                    chx_backspace_ascii();
+                }
+                break;
+        }
+
+        // clear selection if cursor is not at the end of the selection (meaning the user is no longer selecting and the cursor has moved)
+        if (CINST.selected && CINST.cursor.pos != CINST.sel_stop) {
+            chx_clear_selection();
         }
     }
-
-    // load file
-    struct chx_finfo hdata = chx_import(argv[1]);
-    hdata.filename = memfork(argv[1], str_len(argv[1]) + 1);
-    if (!hdata.data) {
-        printf("file \"%s\" not found.\n", argv[1]);
-        return 1;
-    }
-
-    // enter new terminal state
-    tenter();
-    cls();
-
-    // disable key echoing
-    struct termios old = { 0 };
-    tcgetattr(0, &old);
-    old.c_lflag &= ~ECHO;
-    tcsetattr(0, TCSANOW, &old);
-
-    // override ctrl+z/ctrl+c termination
-    signal(SIGINT, chx_quit);
-    signal(SIGTSTP, chx_quit);
-
-    // setup initial instance
-    CHX_CUR_MAX_INSTANCE = -1;
-    CHX_SEL_INSTANCE = 0;
-    CHX_INSTANCES = (struct CHX_INSTANCE*) calloc(sizeof (struct CHX_INSTANCE), CHX_MAX_NUM_INSTANCES);
-
-    chx_add_instance(argv[1]);
-
-    // only show preview or inspector if it will fit on the screen
-    CINST.show_inspector = (CHX_PREVIEW_END + 28 > CINST.width) ? 0 : CHX_SHOW_INSPECTOR_ON_STARTUP;
-    CINST.show_preview = (CHX_PREVIEW_END > CINST.width) ? 0 : CHX_SHOW_PREVIEW_ON_STARTUP;
-
-    // if the screen cannot fit the contents, remove one byte until it can be displayed
-    while (CHX_CONTENT_END > CINST.width && CINST.bytes_per_row) {
-        CINST.bytes_in_group = 1;
-        CINST.bytes_per_row--;
-    }
-
-    // alert user if application cannot be functionally operated
-    if (CINST.num_rows < 2 || !CINST.bytes_per_row) {
-        chx_exit_with_message("terminal is too small to run application.\n");
-    }
-
-    // draw elements
-    chx_draw_all();
-
-    // call main loop
-    chx_main();
-
-    texit();
-    return 0;
 }
