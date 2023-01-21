@@ -9,12 +9,12 @@
 #include "interpreter.h"
 #include "utils.h"
 
-void chx_type_mode_toggle()
+void chx_replace_mode_toggle()
 {
-    if (CINST.mode == CHX_MODE_TYPE) {
+    if (CINST.mode == CHX_MODE_REPLACE) {
         CINST.mode = CHX_MODE_DEFAULT;
     } else {
-        CINST.mode = CHX_MODE_TYPE;
+        CINST.mode = CHX_MODE_REPLACE;
     }
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
@@ -33,24 +33,24 @@ void chx_insert_mode_toggle()
     fflush(stdout);
 }
 
-void chx_replace_mode_toggle()
+void chx_replace2_mode_toggle()
 {
-    if (CINST.mode == CHX_MODE_REPLACE) {
+    if (CINST.mode == CHX_MODE_REPLACE2) {
         CINST.mode = CHX_MODE_DEFAULT;
     } else {
-        CINST.mode = CHX_MODE_REPLACE;
+        CINST.mode = CHX_MODE_REPLACE2;
     }
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
     fflush(stdout);
 }
 
-void chx_type_ascii_mode_toggle()
+void chx_replace_ascii_mode_toggle()
 {
-    if (CINST.mode == CHX_MODE_TYPE_ASCII) {
+    if (CINST.mode == CHX_MODE_REPLACE_ASCII) {
         CINST.mode = CHX_MODE_DEFAULT;
     } else {
-        CINST.mode = CHX_MODE_TYPE_ASCII;
+        CINST.mode = CHX_MODE_REPLACE_ASCII;
     }
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
@@ -69,12 +69,12 @@ void chx_insert_ascii_mode_toggle()
     fflush(stdout);
 }
 
-void chx_replace_ascii_mode_toggle()
+void chx_replace2_ascii_mode_toggle()
 {
-    if (CINST.mode == CHX_MODE_REPLACE_ASCII) {
+    if (CINST.mode == CHX_MODE_REPLACE2_ASCII) {
         CINST.mode = CHX_MODE_DEFAULT;
     } else {
-        CINST.mode = CHX_MODE_REPLACE_ASCII;
+        CINST.mode = CHX_MODE_REPLACE2_ASCII;
     }
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
@@ -484,9 +484,9 @@ void chx_toggle_preview()
     chx_draw_all();
 }
 
-void chx_mode_set_type()
+void chx_mode_set_replace()
 {
-    CINST.mode = CHX_MODE_TYPE;
+    CINST.mode = CHX_MODE_REPLACE;
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
     fflush(stdout);
@@ -500,17 +500,17 @@ void chx_mode_set_insert()
     fflush(stdout);
 }
 
-void chx_mode_set_replace()
+void chx_mode_set_replace2()
 {
-    CINST.mode = CHX_MODE_REPLACE;
+    CINST.mode = CHX_MODE_REPLACE2;
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
     fflush(stdout);
 }
 
-void chx_mode_set_type_ascii()
+void chx_mode_set_replace_ascii()
 {
-    CINST.mode = CHX_MODE_TYPE_ASCII;
+    CINST.mode = CHX_MODE_REPLACE_ASCII;
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
     fflush(stdout);
@@ -524,9 +524,9 @@ void chx_mode_set_insert_ascii()
     fflush(stdout);
 }
 
-void chx_mode_set_replace_ascii()
+void chx_mode_set_replace2_ascii()
 {
-    CINST.mode = CHX_MODE_REPLACE_ASCII;
+    CINST.mode = CHX_MODE_REPLACE2_ASCII;
     chx_print_status();
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
     fflush(stdout);

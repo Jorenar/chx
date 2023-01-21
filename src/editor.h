@@ -23,12 +23,12 @@
 #define FALSE 0
 
 #define CHX_MODE_DEFAULT       0
-#define CHX_MODE_REPLACE       1
+#define CHX_MODE_REPLACE2       1
 #define CHX_MODE_INSERT        2
-#define CHX_MODE_TYPE          3
-#define CHX_MODE_REPLACE_ASCII 4
+#define CHX_MODE_REPLACE          3
+#define CHX_MODE_REPLACE2_ASCII 4
 #define CHX_MODE_INSERT_ASCII  5
-#define CHX_MODE_TYPE_ASCII    6
+#define CHX_MODE_REPLACE_ASCII    6
 
 #define tenter() system("tput smcup")
 #define texit() system("tput rmcup")
@@ -108,7 +108,7 @@ struct chx_last_action {
 struct chx_cursor {
     long pos;
     long line;
-    char sbpos;
+    char sbpos; // ??
 };
 
 struct chx_key {
@@ -170,7 +170,7 @@ extern void* func_exceptions[];
 /* LAYOUT SETTINGS */
 #define CHX_FRAME_COLOUR        ANSI_FG_CYAN
 #define CHX_UNSAVED_COLOUR      ANSI_FG_RGB(0,240,240)
-#define CHX_ASCII_CUR_FORMAT    ANSI_UNDERLINE
+#define CHX_ASCII_CUR_FORMAT    ANSI_REVERSE
 #define CHX_ASCII_SELECT_FORMAT ANSI_REVERSE
 #define CHX_SELECT_FORMAT       ANSI_REVERSE
 

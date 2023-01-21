@@ -28,12 +28,12 @@ void* func_exceptions[] = {
     chx_cursor_prev_byte,
     chx_execute_last_action,
     chx_prompt_command,
-    chx_mode_set_type_ascii,
-    chx_mode_set_type,
-    chx_mode_set_insert_ascii,
-    chx_mode_set_insert,
     chx_mode_set_replace_ascii,
     chx_mode_set_replace,
+    chx_mode_set_insert_ascii,
+    chx_mode_set_insert,
+    chx_mode_set_replace2_ascii,
+    chx_mode_set_replace2,
     chx_remove_selected,
     chx_delete_selected,
     chx_erase_hexchar,
@@ -196,23 +196,23 @@ void chx_print_status()
         case CHX_MODE_DEFAULT:
             printf(ANSI_ERASE_LINE "[ COMMAND ]");
             break;
-        case CHX_MODE_TYPE:
-            printf(ANSI_ERASE_LINE "[ TYPE ]");
+        case CHX_MODE_REPLACE:
+            printf(ANSI_ERASE_LINE "[ REPLACE ]");
             break;
         case CHX_MODE_INSERT:
             printf(ANSI_ERASE_LINE "[ INSERT ]");
             break;
-        case CHX_MODE_REPLACE:
-            printf(ANSI_ERASE_LINE "[ REPLACE ]");
+        case CHX_MODE_REPLACE2:
+            printf(ANSI_ERASE_LINE "[ REPLACE2 ]");
             break;
-        case CHX_MODE_TYPE_ASCII:
-            printf(ANSI_ERASE_LINE "[ ASCII TYPE ]");
+        case CHX_MODE_REPLACE_ASCII:
+            printf(ANSI_ERASE_LINE "[ ASCII REPLACE ]");
             break;
         case CHX_MODE_INSERT_ASCII:
             printf(ANSI_ERASE_LINE "[ ASCII INSERT ]");
             break;
-        case CHX_MODE_REPLACE_ASCII:
-            printf(ANSI_ERASE_LINE "[ ASCII REPLACE ]");
+        case CHX_MODE_REPLACE2_ASCII:
+            printf(ANSI_ERASE_LINE "[ ASCII REPLACE2 ]");
             break;
         default:
             printf(ANSI_ERASE_LINE "[ UNKNOWN ]");
@@ -664,14 +664,14 @@ void chx_main()
                     chx_erase_hexchar();
                 }
                 break;
-            case CHX_MODE_REPLACE:
+            case CHX_MODE_REPLACE2:
                 if (IS_CHAR_HEX(WORD(key))) {
                     chx_set_hexchar(WORD(key));
                 } else if (WORD(key) == 0x7F) {
                     chx_delete_hexchar();
                 }
                 break;
-            case CHX_MODE_TYPE:
+            case CHX_MODE_REPLACE:
                 if (IS_CHAR_HEX(WORD(key))) {
                     chx_type_hexchar(WORD(key));
                 } else if (WORD(key) == 0x7F) {
@@ -685,14 +685,14 @@ void chx_main()
                     chx_erase_ascii();
                 }
                 break;
-            case CHX_MODE_REPLACE_ASCII:
+            case CHX_MODE_REPLACE2_ASCII:
                 if (IS_PRINTABLE(WORD(key))) {
                     chx_set_ascii(WORD(key));
                 } else if (WORD(key) == 0x7F) {
                     chx_delete_ascii();
                 }
                 break;
-            case CHX_MODE_TYPE_ASCII:
+            case CHX_MODE_REPLACE_ASCII:
                 if (IS_PRINTABLE(WORD(key))) {
                     chx_type_ascii(WORD(key));
                 } else if (WORD(key) == 0x7F) {

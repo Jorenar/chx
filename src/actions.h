@@ -5,12 +5,12 @@
 #ifndef ACTIONS_H_
 #define ACTIONS_H_
 
-void chx_type_mode_toggle();
-void chx_insert_mode_toggle();
 void chx_replace_mode_toggle();
-void chx_type_ascii_mode_toggle();
-void chx_insert_ascii_mode_toggle();
+void chx_insert_mode_toggle();
+void chx_replace2_mode_toggle();
 void chx_replace_ascii_mode_toggle();
+void chx_insert_ascii_mode_toggle();
+void chx_replace2_ascii_mode_toggle();
 void chx_cursor_move_vertical_by(int _n);
 void chx_cursor_move_horizontal_by(int _n);
 void chx_cursor_move_up_by_5();
@@ -47,12 +47,12 @@ void chx_page_up();
 void chx_page_down();
 void chx_toggle_inspector();
 void chx_toggle_preview();
-void chx_mode_set_type();
-void chx_mode_set_insert();
 void chx_mode_set_replace();
-void chx_mode_set_type_ascii();
-void chx_mode_set_insert_ascii();
+void chx_mode_set_insert();
+void chx_mode_set_replace2();
 void chx_mode_set_replace_ascii();
+void chx_mode_set_insert_ascii();
+void chx_mode_set_replace2_ascii();
 void chx_mode_set_default();
 void chx_revert();
 void chx_save();
