@@ -74,7 +74,7 @@ void chx_export(char* fpath)
 
 void chx_scroll_up(int _n)
 {
-    printf("\e[%dS", _n);
+    printf(ANSI_SU(%d), _n);
     while (_n--) {
         chx_redraw_line(CINST.scroll_pos - _n + CINST.num_rows - 1);
     }
@@ -84,7 +84,7 @@ void chx_scroll_up(int _n)
 
 void chx_scroll_down(int _n)
 {
-    printf("\e[%dT", _n);
+    printf(ANSI_SD(%d), _n);
     while (_n--) {
         chx_redraw_line(CINST.scroll_pos + _n);
     }
@@ -146,7 +146,7 @@ void chx_redraw_line(long line)
 
     // print row number
     cur_set(0, cur_y);
-    printf(CHX_FRAME_COLOUR "%0*lX \e[0m%-*c", CINST.row_num_len, line_start, CINST.group_spacing, ' ');
+    printf(CHX_FRAME_COLOUR "%0*lX " ANSI_RESET "%-*c", CINST.row_num_len, line_start, CINST.group_spacing, ' ');
 
     // print row contents
     long sel_begin = min(CINST.sel_start, CINST.sel_stop);
@@ -169,7 +169,7 @@ void chx_redraw_line(long line)
 
         if (i < CINST.fdata.len) {
             if ((!CINST.selected || i < sel_begin || i >= sel_end) && CINST.style_data[i / 8] & (0x80 >> (i % 8))) {
-                printf(CHX_UNSAVED_COLOUR "%02X\e[0m", CINST.fdata.data[i]);
+                printf(CHX_UNSAVED_COLOUR "%02X" ANSI_RESET, CINST.fdata.data[i]);
             } else {
                 printf("%02X", CINST.fdata.data[i]);
             }
@@ -178,11 +178,11 @@ void chx_redraw_line(long line)
         }
 
         if (CINST.selected && i == sel_end - 1) {
-            printf("\e[0m");
+            printf(ANSI_RESET);
         }
     }
 
-    printf("\e[0m");
+    printf(ANSI_RESET);
 
     // restore cursor position
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
@@ -194,28 +194,28 @@ void chx_print_status()
     cur_set(0, CINST.height);
     switch (CINST.mode) {
         case CHX_MODE_DEFAULT:
-            printf("\e[2K[ COMMAND ]");
+            printf(ANSI_ERASE_LINE "[ COMMAND ]");
             break;
         case CHX_MODE_TYPE:
-            printf("\e[2K[ TYPE ]");
+            printf(ANSI_ERASE_LINE "[ TYPE ]");
             break;
         case CHX_MODE_INSERT:
-            printf("\e[2K[ INSERT ]");
+            printf(ANSI_ERASE_LINE "[ INSERT ]");
             break;
         case CHX_MODE_REPLACE:
-            printf("\e[2K[ REPLACE ]");
+            printf(ANSI_ERASE_LINE "[ REPLACE ]");
             break;
         case CHX_MODE_TYPE_ASCII:
-            printf("\e[2K[ ASCII TYPE ]");
+            printf(ANSI_ERASE_LINE "[ ASCII TYPE ]");
             break;
         case CHX_MODE_INSERT_ASCII:
-            printf("\e[2K[ ASCII INSERT ]");
+            printf(ANSI_ERASE_LINE "[ ASCII INSERT ]");
             break;
         case CHX_MODE_REPLACE_ASCII:
-            printf("\e[2K[ ASCII REPLACE ]");
+            printf(ANSI_ERASE_LINE "[ ASCII REPLACE ]");
             break;
         default:
-            printf("\e[2K[ UNKNOWN ]");
+            printf(ANSI_ERASE_LINE "[ UNKNOWN ]");
             break;
     }
     printf(" I%02i '%s' (%li bytes)", CHX_SEL_INSTANCE, CINST.fdata.filename, CINST.fdata.len);
@@ -238,46 +238,46 @@ void chx_draw_extra()
     // clear bit of screen
     cur_set(offset - 1, 0);
     for (int i = 0; i < CINST.num_rows + PD; i++) {
-        printf("\e[0K\e[%dG\e[1B", offset);
+        printf(ANSI_ERASE_CUR2EOL ANSI_CHA(%d) ANSI_CUD(1), offset);
     }
 
     // print inspected data
     cur_set(offset, 0);
-    printf("\e[1m");
-    printf("\e[0KData Inspector:");
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kbinary: "BINARY_PATTERN, BYTE_TO_BINARY(buf[0]));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kint8: %i", INT8_AT(&buf));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kint16: %i", (CINST.endianness) ? INT16_AT(&buf) : __bswap_16 (INT16_AT(&buf)));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kint32: %i", (CINST.endianness) ? INT32_AT(&buf) : __bswap_32 (INT32_AT(&buf)));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kint64: %li", (CINST.endianness) ? INT64_AT(&buf) : __bswap_64 (INT64_AT(&buf)));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kuint8: %u", UINT8_AT(&buf));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kuint16: %u", (CINST.endianness) ? UINT16_AT(&buf) : __bswap_16 (UINT16_AT(&buf)));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kuint32: %u", (CINST.endianness) ? UINT32_AT(&buf) : __bswap_32 (UINT32_AT(&buf)));
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kuint64: %lu", (CINST.endianness) ? UINT64_AT(&buf) : __bswap_64 (UINT64_AT(&buf)));
-    printf("\e[%dG\e[1B ", offset);
+    printf(ANSI_BOLD);
+    printf(ANSI_ERASE_CUR2EOL "Data Inspector:");
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "binary: "BINARY_PATTERN, BYTE_TO_BINARY(buf[0]));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "int8: %i", INT8_AT(&buf));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "int16: %i", (CINST.endianness) ? INT16_AT(&buf) : __bswap_16 (INT16_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "int32: %i", (CINST.endianness) ? INT32_AT(&buf) : __bswap_32 (INT32_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "int64: %li", (CINST.endianness) ? INT64_AT(&buf) : __bswap_64 (INT64_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "uint8: %u", UINT8_AT(&buf));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "uint16: %u", (CINST.endianness) ? UINT16_AT(&buf) : __bswap_16 (UINT16_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "uint32: %u", (CINST.endianness) ? UINT32_AT(&buf) : __bswap_32 (UINT32_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "uint64: %lu", (CINST.endianness) ? UINT64_AT(&buf) : __bswap_64 (UINT64_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
     if (IS_PRINTABLE(buf[0])) {
-        printf("\e[0KANSI char: %c", buf[0]);
+        printf(ANSI_ERASE_CUR2EOL "ANSI char: %c", buf[0]);
     } else {
-        printf("\e[0KANSI char: \ufffd");
+        printf(ANSI_ERASE_CUR2EOL "ANSI char: \ufffd");
     }
-    printf("\e[%dG\e[1B ", offset);
-    printf("\e[0Kwide char: %lc", (CINST.endianness) ? WCHAR_AT(&buf) : __bswap_16 (WCHAR_AT(&buf)));
-    printf("\e[%dG\e[1B\e[0K\e[1B ", offset);
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "wide char: %lc", (CINST.endianness) ? WCHAR_AT(&buf) : __bswap_16 (WCHAR_AT(&buf)));
+    printf(ANSI_CHA(%d) ANSI_CUD(1) ANSI_ERASE_CUR2EOL ANSI_CUD(1) " ", offset);
     if (CINST.endianness) {
-        printf("\e[0K[LITTLE ENDIAN]");
+        printf(ANSI_ERASE_CUR2EOL "[LITTLE ENDIAN]");
     } else {
-        printf("\e[0K[BIG ENDIAN]");
+        printf(ANSI_ERASE_CUR2EOL "[BIG ENDIAN]");
     }
-    printf("\e[0m");
+    printf(ANSI_RESET);
 }
 
 void chx_draw_all()
@@ -316,11 +316,11 @@ void chx_draw_header()
         chx_draw_all();
     }
 
-    printf("\e[0;0H%-*c"CHX_FRAME_COLOUR, CINST.row_num_len + CINST.group_spacing, ' ');
+    printf(ANSI_CUP(0,0) "%-*c"CHX_FRAME_COLOUR, CINST.row_num_len + CINST.group_spacing, ' ');
     for (int i = 0; i < CINST.bytes_per_row / CINST.bytes_in_group; i++) {
         printf("%02X%-*c", i * CINST.bytes_in_group, CINST.bytes_in_group * 2 + CINST.group_spacing - 2, ' ');
     }
-    printf("\e[0m");
+    printf(ANSI_RESET);
 }
 
 void chx_draw_contents()
@@ -328,10 +328,10 @@ void chx_draw_contents()
     // print row numbers
     for (int i = 0; i < CINST.num_rows; i++) {
         cur_set(0, i + TPD);
-        printf(CHX_FRAME_COLOUR "%0*lX \e[0m%-*c", CINST.row_num_len, (long) ((i + CINST.scroll_pos) * CINST.bytes_per_row), CINST.group_spacing, ' ');
+        printf(CHX_FRAME_COLOUR "%0*lX " ANSI_RESET "%-*c", CINST.row_num_len, (long) ((i + CINST.scroll_pos) * CINST.bytes_per_row), CINST.group_spacing, ' ');
     }
 
-    printf("\e[0m");
+    printf(ANSI_RESET);
 
     // print main contents
     long sel_begin = min(CINST.sel_start, CINST.sel_stop);
@@ -355,7 +355,7 @@ void chx_draw_contents()
 
         if (i < CINST.fdata.len) {
             if ((!CINST.selected || i < sel_begin || i >= sel_end) && CINST.style_data[i / 8] & (0x80 >> (i % 8))) {
-                printf(CHX_UNSAVED_COLOUR "%02X\e[0m", CINST.fdata.data[i]);
+                printf(CHX_UNSAVED_COLOUR "%02X" ANSI_RESET, CINST.fdata.data[i]);
             } else {
                 printf("%02X", CINST.fdata.data[i]);
             }
@@ -364,11 +364,11 @@ void chx_draw_contents()
         }
 
         if (CINST.selected && i == sel_end - 1) {
-            printf("\e[0m");
+            printf(ANSI_RESET);
         }
     }
 
-    printf("\e[0m%-*c", CINST.group_spacing, ' ');
+    printf(ANSI_RESET "%-*c", CINST.group_spacing, ' ');
 }
 
 void chx_draw_sidebar()
@@ -377,7 +377,7 @@ void chx_draw_sidebar()
     if (!CINST.show_inspector) {
         cur_set(CHX_CONTENT_END, 0);
         for (int i = 0; i < CINST.num_rows + PD; i++) {
-            printf("\e[0K\e[%dG\e[1B", CHX_CONTENT_END);
+            printf(ANSI_ERASE_CUR2EOL ANSI_CHA(%d) ANSI_CUD(1) "", CHX_CONTENT_END);
         }
     }
 
@@ -416,14 +416,14 @@ void chx_draw_sidebar()
 
         if (CINST.selected) {
             if (i == sel_end - 1) {
-                printf("\e[0m");
+                printf(ANSI_RESET);
             }
         } else if (i == CINST.cursor.pos) {
-            printf("\e[0m");
+            printf(ANSI_RESET);
         }
     }
 
-    printf("\e[0m%-*c", CINST.group_spacing, ' ');
+    printf(ANSI_RESET "%-*c", CINST.group_spacing, ' ');
 }
 
 struct chx_key chx_get_key()
@@ -495,23 +495,23 @@ void chx_get_str(char* _buf, int _len)
     for (int bpos = 0; WORD(k) != 0x0A; k = chx_get_key()) {
         if (WORD(k) == KEY_LEFT && bpos > 0) {
             bpos--;
-            printf("\e[1D");
+            printf(ANSI_CUB(1));
         } else if (WORD(k) == KEY_RIGHT && _buf[bpos]) {
             bpos++;
-            printf("\e[1C");
+            printf(ANSI_CUF(1));
         } else if (WORD(k) == 0x7F && bpos) {
             bpos--;
             int n;
             for (n = bpos; _buf[n]; n++) {
                 _buf[n] = _buf[n + 1];
             }
-            printf("\e[1D");
+            printf(ANSI_CUB(1));
             for (n = bpos; _buf[n]; n++) {
                 printf("%c", _buf[n]);
             }
-            printf("\e[0K");
+            printf(ANSI_ERASE_CUR2EOL "");
             if (n - bpos) {
-                printf("\e[%iD", n - bpos);
+                printf(ANSI_CUB(%i), n - bpos);
             }
 
         } else if (IS_PRINTABLE(WORD(k))) {
@@ -526,10 +526,10 @@ void chx_get_str(char* _buf, int _len)
             for (n = bpos; _buf[n]; n++) {
                 printf("%c", _buf[n]);
             }
-            printf("\e[0K");
-            printf("\e[%iD", n - bpos);
+            printf(ANSI_ERASE_CUR2EOL "");
+            printf(ANSI_CUB(%i), n - bpos);
             bpos++;
-            printf("\e[1C");
+            printf(ANSI_CUF(1));
         } else if (WORD(k) == KEY_ESCAPE) {
             for (int i = 0; _buf[i]; i++) {
                 _buf[i] = 0;
@@ -551,7 +551,7 @@ void chx_add_instance(char* fpath)
     if (!hdata.data) {
         // alert user file could not be found and wait for key input to continue
         cur_set(0, CINST.height);
-        printf("\e[2Kfile '%s' not found.", fpath);
+        printf(ANSI_ERASE_LINE "file '%s' not found.", fpath);
         fflush(stdout);
         chx_get_char();
         return;

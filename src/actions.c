@@ -359,7 +359,7 @@ void chx_count_instances(char _np, char** _pl)
 
     // print number of occurances and wait for key input to continue
     cur_set(0, CINST.height);
-    printf("\e[2Kfound %li occurances of '%s' in file '%s'", count, _pl[0], CINST.fdata.filename);
+    printf(ANSI_ERASE_LINE "found %li occurances of '%s' in file '%s'", count, _pl[0], CINST.fdata.filename);
     fflush(stdout);
     chx_get_char();
 
@@ -378,7 +378,7 @@ void chx_switch_file(char _np, char** _pl)
     if (!hdata.data) {
         // alert user file could not be found and wait for key input to continue
         cur_set(0, CINST.height);
-        printf("\e[2Kfile '%s' not found.", _pl[0]);
+        printf(ANSI_ERASE_LINE "file '%s' not found.", _pl[0]);
         fflush(stdout);
         chx_get_char();
         return;
@@ -600,7 +600,7 @@ void chx_prompt_save_as()
 
     // print save dialoge and recieve user input
     cur_set(0, CINST.height);
-    printf("\e[2KSAVE AS? (LEAVE EMPTY TO CANCEL): ");
+    printf(ANSI_ERASE_LINE "SAVE AS? (LEAVE EMPTY TO CANCEL): ");
     fflush(stdout);
 
     chx_get_str(usrin, 256);
@@ -786,7 +786,7 @@ void chx_print_finfo()
 
     // print info and for key input to ocntinue
     cur_set(0, CINST.height);
-    printf("\e[2K'%s' %liB %iL %iC (offset: %#lx)", CINST.fdata.filename, CINST.fdata.len, nlc, chc, CINST.cursor.pos);
+    printf(ANSI_ERASE_LINE "'%s' %liB %iL %iC (offset: %#lx)", CINST.fdata.filename, CINST.fdata.len, nlc, chc, CINST.cursor.pos);
     cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
     fflush(stdout);
     chx_get_char();
@@ -851,7 +851,7 @@ void chx_quit()
     // ask user if they would like to save
     if (!CINST.saved) {
         cur_set(0, CINST.height);
-        printf("\e[2KWOULD YOU LIKE TO SAVE? (Y / N): ");
+        printf(ANSI_ERASE_LINE "WOULD YOU LIKE TO SAVE? (Y / N): ");
         fflush(stdout);
 
         switch (chx_get_char()) {
@@ -881,7 +881,7 @@ void chx_prompt_command()
 
     // command interpreter recieve user input
     cur_set(0, CINST.height);
-    printf("\e[2K:");
+    printf(ANSI_ERASE_LINE ":");
     fflush(stdout);
 
     chx_get_str(usrin, 256);

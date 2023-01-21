@@ -17,6 +17,8 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 
+#include <ansi_esc_seq.h>
+
 #define TRUE 1
 #define FALSE 0
 
@@ -30,8 +32,8 @@
 
 #define tenter() system("tput smcup")
 #define texit() system("tput rmcup")
-#define cls() printf("\e[2J");
-#define cur_set(X, Y) printf("\033[%d;%dH", Y + 1, X + 1)
+#define cls() printf(ANSI_ERASE_SCREEN);
+#define cur_set(X, Y) printf(ANSI_CUP(%d,%d), Y + 1, X + 1)
 
 #define TPD 1
 #define BPD 1
@@ -39,19 +41,6 @@
 
 #define CHX_LITTLE_ENDIAN 1
 #define CHX_BIG_ENDIAN 0
-
-#define FORMAT_UNDERLINE "\e[4m"
-#define FORMAT_BOLD      "\e[1m"
-#define FORMAT_REVERSE   "\e[7m"
-#define COLOUR_BLACK     "\e[30m"
-#define COLOUR_RED       "\e[31m"
-#define COLOUR_GREEN     "\e[32m"
-#define COLOUR_YELLOW    "\e[33m"
-#define COLOUR_BLUE      "\e[34m"
-#define COLOUR_MAGENTA   "\e[35m"
-#define COLOUR_CYAN      "\e[36m"
-#define COLOUR_WHITE     "\e[37m"
-#define COLOUR_GREY      "\e[90m"
 
 #define CINST CHX_INSTANCES[CHX_SEL_INSTANCE]
 #define BETWEEN_GE1_L2(X, A, B) (X >= min(A, B) && X < max(A, B))
@@ -179,11 +168,11 @@ extern void* func_exceptions[];
 #define CHX_MAX_NUM_PARAMS                8 // max number of parameters for interpreter commands
 
 /* LAYOUT SETTINGS */
-#define CHX_FRAME_COLOUR        COLOUR_CYAN
-#define CHX_UNSAVED_COLOUR      "\033[38;2;0;240;240m"
-#define CHX_ASCII_CUR_FORMAT    FORMAT_UNDERLINE
-#define CHX_ASCII_SELECT_FORMAT FORMAT_REVERSE
-#define CHX_SELECT_FORMAT       FORMAT_REVERSE
+#define CHX_FRAME_COLOUR        ANSI_FG_CYAN
+#define CHX_UNSAVED_COLOUR      ANSI_FG_RGB(0,240,240)
+#define CHX_ASCII_CUR_FORMAT    ANSI_UNDERLINE
+#define CHX_ASCII_SELECT_FORMAT ANSI_REVERSE
+#define CHX_SELECT_FORMAT       ANSI_REVERSE
 
 #define CHX_BYTES_PER_ROW   16
 #define CHX_BYTES_IN_GROUP   1

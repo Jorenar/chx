@@ -7,7 +7,7 @@ BINDIR   := $(BUILD)/bin
 DEPSDIR  := $(BUILD)/deps
 
 CFLAGS   := -std=c99 -O2
-CPPFLAGS :=
+CPPFLAGS += -I extern/ANSI_Esc_Seq
 
 LDFLAGS  := -s
 LDLIBS   :=
@@ -52,8 +52,8 @@ $(BINDIR)/%: $(OBJS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 $(DEPSDIR)/%.d: $(SRCDIR)/%.c
 	@mkdir -p $(DEPSDIR)
-	$(CC) -M $< -MT $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $<) > $@
+	$(CC) $(CPPFLAGS) -M $< -MT $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $<) > $@
