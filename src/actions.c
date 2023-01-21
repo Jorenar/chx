@@ -881,7 +881,7 @@ void chx_prompt_command()
 
     // command interpreter recieve user input
     cur_set(0, CINST.height);
-    printf("\e[2K: ");
+    printf("\e[2K:");
     fflush(stdout);
 
     chx_get_str(usrin, 256);
