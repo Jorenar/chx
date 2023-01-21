@@ -36,5 +36,6 @@
 
 extern void (*chx_keybinds_global[])(void);
 extern void (*chx_keybinds_mode_command[])(void);
+extern void (*chx_keybinds_mode_visual[])(void);
 
 #endif // KEYBINDS_H_

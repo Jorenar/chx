@@ -657,6 +657,23 @@ void chx_main()
                     }
                 }
                 break;
+            case CHX_MODE_VISUAL:
+                if (chx_keybinds_mode_visual[WORD(key)]) {
+                    chx_keybinds_mode_visual[WORD(key)]();
+
+                    // make sure function is not in exclusion list, if so then set the last action to the function pointer
+                    char is_valid = 1;
+                    for (int i = 0; i < sizeof (func_exceptions) / sizeof (void*); i++) {
+                        if (chx_keybinds_mode_visual[WORD(key)] == func_exceptions[i]) {
+                            is_valid = 0;
+                        }
+                    }
+                    if (is_valid) {
+                        CINST.last_action.action.execute_void = chx_keybinds_mode_visual[WORD(key)];
+                        CINST.last_action.type = 0;
+                    }
+                }
+                break;
             case CHX_MODE_INSERT:
                 if (IS_CHAR_HEX(WORD(key))) {
                     chx_insert_hexchar(WORD(key));

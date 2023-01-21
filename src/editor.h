@@ -29,6 +29,7 @@
 #define CHX_MODE_REPLACE2_ASCII 4
 #define CHX_MODE_INSERT_ASCII  5
 #define CHX_MODE_REPLACE_ASCII    6
+#define CHX_MODE_VISUAL        7
 
 #define tenter() system("tput smcup")
 #define texit() system("tput rmcup")
