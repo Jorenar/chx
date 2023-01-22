@@ -131,7 +131,7 @@ enum Endianness {
 #define CHX_MAX_NUM_PARAMS             8 // max number of parameters for interpreter commands
 
 /* LAYOUT SETTINGS */
-#define CHX_FRAME_COLOUR        ANSI_FG_CYAN
+#define CHX_FRAME_COLOUR        ANSI_FG_GRAY
 #define CHX_UNSAVED_COLOUR      ANSI_FG_RGB(0,240,240)
 #define CHX_ASCII_CUR_FORMAT    ANSI_REVERSE
 #define CHX_ASCII_SELECT_FORMAT ANSI_REVERSE
