@@ -291,7 +291,7 @@ void chx_draw_header()
         chx_draw_all();
     }
 
-    printf(ANSI_CUP(0,0) "%-*c"CHX_FRAME_COLOUR, CINST.row_num_len + CINST.group_spacing, ' ');
+    printf(ANSI_CUP(0,0) "%-*c" CHX_FRAME_COLOUR, CINST.row_num_len + CINST.group_spacing, ' ');
     for (int i = 0; i < CINST.bytes_per_row / CINST.bytes_in_group; i++) {
         printf("%02X%-*c", i * CINST.bytes_in_group, CINST.bytes_in_group * 2 + CINST.group_spacing - 2, ' ');
     }
