@@ -15,10 +15,6 @@ void (*chx_keybinds_global[])(void) = {
     [KEY_DOWN] = chx_cursor_move_down,
     [KEY_RIGHT] = chx_cursor_next_byte,
     [KEY_LEFT] = chx_cursor_prev_byte,
-    [CHX_SHIFT(KEY_UP)] = chx_cursor_select_up,
-    [CHX_SHIFT(KEY_DOWN)] = chx_cursor_select_down,
-    [CHX_SHIFT(KEY_RIGHT)] = chx_cursor_select_right,
-    [CHX_SHIFT(KEY_LEFT)] = chx_cursor_select_left,
     [CHX_ALT(KEY_UP)] = chx_cursor_move_up_by_5,
     [CHX_ALT(KEY_DOWN)] = chx_cursor_move_down_by_5,
     [CHX_ALT(KEY_RIGHT)] = chx_cursor_move_right_by_5,
@@ -61,8 +57,6 @@ void (*chx_keybinds_mode_command[])(void) = {
     ['x'] = chx_remove_ascii,
     ['G'] = chx_to_end,
     ['g'] = chx_to_start,
-    ['D'] = chx_remove_selected,
-    ['d'] = chx_delete_selected,
     ['v'] = chx_mode_set_visual,
     ['R'] = chx_mode_set_replace,
     ['i'] = chx_mode_set_insert,
@@ -77,8 +71,10 @@ void (*chx_keybinds_mode_command[])(void) = {
 };
 
 void (*chx_keybinds_mode_visual[])(void) = {
-    ['h'] = chx_cursor_select_left,
-    ['j'] = chx_cursor_select_down,
-    ['k'] = chx_cursor_select_up,
-    ['l'] = chx_cursor_select_right,
+    ['h'] = chx_cursor_move_left,
+    ['j'] = chx_cursor_move_down,
+    ['l'] = chx_cursor_move_right,
+    ['k'] = chx_cursor_move_up,
+    ['D'] = chx_remove_selected,
+    ['d'] = chx_delete_selected,
 };

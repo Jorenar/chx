@@ -85,6 +85,17 @@ void chx_update_cursor()
         }
     }
 
+    if (!CINST.selected) {
+        CINST.sel_start = CINST.cursor.pos;
+    }
+    CINST.sel_stop = CINST.cursor.pos;
+    if (CINST.selected) {
+        long p = CINST.cursor.pos / CINST.bytes_per_row;
+        chx_redraw_line(p - 1);
+        chx_redraw_line(p);
+        chx_redraw_line(p + 1);
+    }
+
     if (CINST.show_inspector) {
         chx_draw_extra();
     }

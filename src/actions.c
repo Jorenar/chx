@@ -25,6 +25,7 @@ void chx_mode_set_default()
 
 void chx_mode_set_visual()
 {
+    CINST.selected = 1;
     chx_mode_set(CHX_MODE_VISUAL);
 }
 
@@ -146,58 +147,6 @@ void chx_clear_selection()
     }
     cur_set(chx_cursor_x(), chx_cursor_y());
     fflush(stdout);
-}
-
-void chx_cursor_select_up()
-{
-    if (!CINST.selected) {
-        chx_start_selection();
-    }
-    CINST.cursor.pos -= (CINST.cursor.pos >= CINST.bytes_per_row) * CINST.bytes_per_row;
-    CINST.cursor.sbpos = 0;
-    CINST.sel_stop = CINST.cursor.pos;
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row + 1);
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    chx_update_cursor();
-}
-
-void chx_cursor_select_down()
-{
-    if (!CINST.selected) {
-        chx_start_selection();
-    }
-    CINST.cursor.pos += CINST.bytes_per_row;
-    CINST.cursor.sbpos = 0;
-    CINST.sel_stop = CINST.cursor.pos;
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row - 1);
-    chx_update_cursor();
-}
-
-void chx_cursor_select_right()
-{
-    if (!CINST.selected) {
-        chx_start_selection();
-    }
-    CINST.cursor.pos++;
-    CINST.cursor.sbpos = 0;
-    CINST.sel_stop = CINST.cursor.pos;
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row - 1);
-    chx_update_cursor();
-}
-
-void chx_cursor_select_left()
-{
-    if (!CINST.selected) {
-        chx_start_selection();
-    }
-    CINST.cursor.pos--;
-    CINST.cursor.sbpos = 0;
-    CINST.sel_stop = CINST.cursor.pos;
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row + 1);
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
-    chx_update_cursor();
 }
 
 void chx_exit_with_message(char* _msg)
