@@ -5,6 +5,7 @@
 
 #include "utils.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 long chx_abs(long _n)
@@ -148,4 +149,72 @@ char* chx_extract_param(char* _s, int _n)
     }
 
     return param;
+}
+
+static const char* const special_ascii[128] = {
+    ['\0'] = "'\\0'",
+    [0x01] = "SOH",
+    [0x02] = "STX",
+    [0x03] = "ETX",
+    [0x04] = "EOT",
+    [0x05] = "ENQ",
+    [0x06] = "ACK",
+    ['\a'] = "'\\a'",
+    ['\b'] = "'\\b'",
+    ['\t'] = "'\\t'",
+    ['\n'] = "'\\n'",
+    ['\v'] = "'\\v'",
+    ['\f'] = "'\\f'",
+    ['\r'] = "'\\r'",
+    [0x0E] = "SO",
+    [0x0F] = "SI",
+    [0x10] = "DLE",
+    [0x11] = "DC1",
+    [0x12] = "DC2",
+    [0x13] = "DC3",
+    [0x14] = "DC4",
+    [0x15] = "NAK",
+    [0x16] = "SYN",
+    [0x17] = "ETB",
+    [0x18] = "CAN",
+    [0x19] = "EM",
+    [0x1A] = "SUB",
+    [0x1B] = "ESC",
+    [0x1C] = "FS",
+    [0x1D] = "GS",
+    [0x1E] = "RS",
+    [0x1F] = "US",
+};
+
+void print_ascii_char(char ch)
+{
+    if (ch >= 0 && special_ascii[ch]) {
+        printf("%s", special_ascii[ch]);
+    } else if (IS_PRINTABLE(ch)) {
+        printf("'%c'", ch);
+    } else {
+        printf("\ufffd");
+    }
+}
+
+void print_utf8(char* bbb)
+{
+    char ch = bbb[0];
+    // If ASCII character ....
+    if ((ch & 0x80) == 0) {
+        print_ascii_char(ch);
+    } else {
+        // Process UTF-8
+        char b[5] = { ch };
+        size_t j;
+        for (j = 1; (j < 4) && ((bbb[j] & 0xC0) == 0x80); ++j) {
+            b[j] = bbb[j];
+        }
+        b[j] = 0;
+        if (j == 1) {
+            printf("\ufffd");
+        } else {
+            printf("'%s'", b); // Print 1 UTF-8 character.
+        }
+    }
 }

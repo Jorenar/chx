@@ -55,4 +55,7 @@ int str_len(char* _s);
 char cmp_str(char* _a, char* _b);
 char* chx_extract_param(char* _s, int _n);
 
+void print_ascii_char(char ch);
+void print_utf8(char* bbb);
+
 #endif // UTILS_H_

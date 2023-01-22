@@ -218,7 +218,7 @@ void chx_draw_extra()
     printf(ANSI_BOLD);
     printf(ANSI_ERASE_CUR2EOL "Data Inspector:");
     printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "binary: "BINARY_PATTERN, BYTE_TO_BINARY(buf[0]));
+    printf(ANSI_ERASE_CUR2EOL "binary: " BINARY_PATTERN, BYTE_TO_BINARY(buf[0]));
     printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
     printf(ANSI_ERASE_CUR2EOL "int8: %i", INT8_AT(&buf));
     printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
@@ -235,12 +235,15 @@ void chx_draw_extra()
     printf(ANSI_ERASE_CUR2EOL "uint32: %u", (CINST.endianness) ? UINT32_AT(&buf) : __bswap_32 (UINT32_AT(&buf)));
     printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
     printf(ANSI_ERASE_CUR2EOL "uint64: %lu", (CINST.endianness) ? UINT64_AT(&buf) : __bswap_64 (UINT64_AT(&buf)));
+
     printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    if (IS_PRINTABLE(buf[0])) {
-        printf(ANSI_ERASE_CUR2EOL "ANSI char: %c", buf[0]);
-    } else {
-        printf(ANSI_ERASE_CUR2EOL "ANSI char: \ufffd");
-    }
+    printf(ANSI_ERASE_CUR2EOL "ANSI char: ");
+    print_ascii_char(buf[0]);
+
+    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
+    printf(ANSI_ERASE_CUR2EOL "utf-8: ");
+    print_utf8(buf);
+
     printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
     printf(ANSI_ERASE_CUR2EOL "wide char: %lc", (CINST.endianness) ? WCHAR_AT(&buf) : __bswap_16 (WCHAR_AT(&buf)));
     printf(ANSI_CHA(%d) ANSI_CUD(1) ANSI_ERASE_CUR2EOL ANSI_CUD(1) " ", offset);
