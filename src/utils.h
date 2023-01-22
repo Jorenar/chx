@@ -6,10 +6,17 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+#include <stdint.h>
+#include <stddef.h>
+
+#include <ansi_esc_seq.h>
+
+#define cur_set(X, Y) printf(ANSI_CUP(%d,%d), Y + 1, X + 1)
+
 #define IS_PRINTABLE(C) (C > 0x1F && C < 0x7F)
-#define IS_LETTER(C) ((C ^ 0x40) < 26 || (C ^ 0x60) < 26)
-#define IS_CHAR_HEX(C) ((C ^ 0x40) < 7 || (C ^ 0x60) < 7 || (C ^ 0x30) < 10)
-#define IS_DIGIT(C) ((C ^ 0x30) < 10)
+#define IS_LETTER(C)    ((C ^ 0x40) < 26 || (C ^ 0x60) < 26)
+#define IS_CHAR_HEX(C)  ((C ^ 0x40) < 7 || (C ^ 0x60) < 7 || (C ^ 0x30) < 10)
+#define IS_DIGIT(C)     ((C ^ 0x30) < 10)
 #define IS_QUOTATION(C) (C == '\'' || C == '"')
 
 #define WORD(X)      *((uint16_t*) &X)
@@ -23,6 +30,16 @@
 #define UINT32_AT(X) *((uint32_t*) (X))
 #define UINT64_AT(X) *((uint64_t*) (X))
 #define WCHAR_AT(X)  (wchar_t) *((int16_t*) (X))
+
+#define BYTE_TO_BINARY(byte) \
+    (byte & 0x80 ? '1' : '0'), \
+    (byte & 0x40 ? '1' : '0'), \
+    (byte & 0x20 ? '1' : '0'), \
+    (byte & 0x10 ? '1' : '0'), \
+    (byte & 0x08 ? '1' : '0'), \
+    (byte & 0x04 ? '1' : '0'), \
+    (byte & 0x02 ? '1' : '0'), \
+    (byte & 0x01 ? '1' : '0')
 
 long chx_abs(long _n);
 long min(long _a, long _b);

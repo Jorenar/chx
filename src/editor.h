@@ -6,11 +6,6 @@
 #ifndef EDITOR_H_
 #define EDITOR_H_
 
-#include <signal.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <malloc.h>
-#include <locale.h>
 #include <byteswap.h>
 #include <unistd.h>
 #include <limits.h>
@@ -19,51 +14,18 @@
 
 #include <ansi_esc_seq.h>
 
-#define TRUE 1
-#define FALSE 0
-
-#define CHX_MODE_DEFAULT       0
-#define CHX_MODE_REPLACE2       1
-#define CHX_MODE_INSERT        2
-#define CHX_MODE_REPLACE          3
-#define CHX_MODE_REPLACE2_ASCII 4
-#define CHX_MODE_INSERT_ASCII  5
-#define CHX_MODE_REPLACE_ASCII    6
-#define CHX_MODE_VISUAL        7
-
-#define tenter() system("tput smcup")
-#define texit() system("tput rmcup")
-#define cls() printf(ANSI_ERASE_SCREEN);
-#define cur_set(X, Y) printf(ANSI_CUP(%d,%d), Y + 1, X + 1)
-
-#define TPD 1
-#define BPD 1
-#define PD (TPD + BPD)
-
-#define CHX_LITTLE_ENDIAN 1
-#define CHX_BIG_ENDIAN 0
+enum Mode {
+    CHX_MODE_DEFAULT,
+    CHX_MODE_VISUAL,
+    CHX_MODE_REPLACE2,
+    CHX_MODE_INSERT,
+    CHX_MODE_REPLACE,
+    CHX_MODE_REPLACE2_ASCII,
+    CHX_MODE_INSERT_ASCII,
+    CHX_MODE_REPLACE_ASCII,
+};
 
 #define CINST CHX_INSTANCES[CHX_SEL_INSTANCE]
-#define BETWEEN_GE1_L2(X, A, B) (X >= min(A, B) && X < max(A, B))
-#define CHX_CONTENT_END (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * (CINST.bytes_per_row / CINST.bytes_in_group) + CINST.group_spacing)
-#define CHX_PREVIEW_END (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * (CINST.bytes_per_row / CINST.bytes_in_group) + 2 * CINST.group_spacing + CINST.bytes_per_row)
-#define CHX_CURSOR_X (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * ((CINST.cursor.pos % CINST.bytes_per_row) / CINST.bytes_in_group) + 2 * (CINST.cursor.pos % CINST.bytes_in_group) + CINST.cursor.sbpos + CINST.group_spacing)
-#define CHX_CURSOR_Y (int) (CINST.cursor.pos / CINST.bytes_per_row - CINST.scroll_pos + TPD)
-#define CHX_GET_X(X) (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * ((X % CINST.bytes_per_row) / CINST.bytes_in_group) + 2 * (X % CINST.bytes_in_group) + CINST.group_spacing)
-#define CHX_GET_Y(X) (int) (X / CINST.bytes_per_row - CINST.scroll_pos + TPD)
-
-#define BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte) \
-    (byte & 0x80 ? '1' : '0'), \
-    (byte & 0x40 ? '1' : '0'), \
-    (byte & 0x20 ? '1' : '0'), \
-    (byte & 0x10 ? '1' : '0'), \
-    (byte & 0x08 ? '1' : '0'), \
-    (byte & 0x04 ? '1' : '0'), \
-    (byte & 0x02 ? '1' : '0'), \
-    (byte & 0x01 ? '1' : '0')
-
-void fvoid();
 
 struct chx_finfo chx_import(char* fpath);
 void chx_export(char* fpath);
@@ -78,18 +40,7 @@ struct chx_key chx_get_key();
 char chx_get_char();
 void chx_get_str();
 
-void chx_scroll_up(int _n);
-void chx_scroll_down(int _n);
-
-void chx_print_status();
-void chx_update_cursor();
-void chx_swap_endianness();
-void chx_draw_contents();
-void chx_draw_sidebar();
-void chx_draw_extra();
-void chx_draw_header();
-void chx_draw_all();
-void chx_redraw_line();
+void chx_mode_set(enum Mode m);
 
 void chx_main();
 
@@ -122,7 +73,7 @@ struct chx_finfo {
     long len, num_rows;
 };
 
-struct CHX_INSTANCE {
+struct Instance {
     unsigned char* style_data;
     int copy_buffer_len;
     char* copy_buffer;
@@ -151,22 +102,26 @@ struct CHX_INSTANCE {
     char show_preview;
 };
 
-extern struct CHX_INSTANCE* CHX_INSTANCES;
+extern struct Instance* CHX_INSTANCES;
 extern int CHX_CUR_MAX_INSTANCE;
 extern int CHX_SEL_INSTANCE;
 
 extern void* func_exceptions[];
 
 
-/* OPTIMISATION SETTINGS (COMMENT TO DISABLE) */
-#define CHX_SCROLL_SUPPORT
+// TODO move to config
+
+enum Endianness {
+    CHX_LITTLE_ENDIAN = 1,
+    CHX_BIG_ENDIAN = 0,
+};
 
 /* GENERAL SETTINGS */
-#define CHX_DEFAULT_ENDIANNESS         CHX_LITTLE_ENDIAN
-#define CHX_SHOW_PREVIEW_ON_STARTUP    TRUE // can be overridden if screen is small
-#define CHX_SHOW_INSPECTOR_ON_STARTUP  TRUE // can be overridden if screen is small
-#define CHX_MAX_NUM_INSTANCES             8 // max number of files open at a time
-#define CHX_MAX_NUM_PARAMS                8 // max number of parameters for interpreter commands
+#define CHX_DEFAULT_ENDIANNESS         CHX_LITTLE_ENDIAN // TODO: detect programmically
+#define CHX_SHOW_PREVIEW_ON_STARTUP    1 // (bool) can be overridden if screen is small
+#define CHX_SHOW_INSPECTOR_ON_STARTUP  1 // (bool) can be overridden if screen is small
+#define CHX_MAX_NUM_INSTANCES          8 // max number of files open at a time
+#define CHX_MAX_NUM_PARAMS             8 // max number of parameters for interpreter commands
 
 /* LAYOUT SETTINGS */
 #define CHX_FRAME_COLOUR        ANSI_FG_CYAN

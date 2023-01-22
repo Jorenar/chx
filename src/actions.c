@@ -5,21 +5,13 @@
 
 #include "actions.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "editor.h"
 #include "interpreter.h"
 #include "utils.h"
-
-// helpers {{{
-
-void chx_mode_set_x(int x)
-{
-    CINST.mode = x;
-    chx_print_status();
-    cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
-    fflush(stdout);
-}
-
-// }}}
+#include "tui.h"
 
 // mode {{{
 
@@ -28,42 +20,42 @@ void chx_mode_set_default()
     if (CINST.selected) {
         chx_clear_selection();
     }
-    chx_mode_set_x(CHX_MODE_DEFAULT);
+    chx_mode_set(CHX_MODE_DEFAULT);
 }
 
 void chx_mode_set_replace()
 {
-    chx_mode_set_x(CHX_MODE_REPLACE);
+    chx_mode_set(CHX_MODE_REPLACE);
 }
 
 void chx_mode_set_visual()
 {
-    chx_mode_set_x(CHX_MODE_VISUAL);
+    chx_mode_set(CHX_MODE_VISUAL);
 }
 
 void chx_mode_set_insert()
 {
-    chx_mode_set_x(CHX_MODE_INSERT);
+    chx_mode_set(CHX_MODE_INSERT);
 }
 
 void chx_mode_set_replace2()
 {
-    chx_mode_set_x(CHX_MODE_REPLACE2);
+    chx_mode_set(CHX_MODE_REPLACE2);
 }
 
 void chx_mode_set_replace_ascii()
 {
-    chx_mode_set_x(CHX_MODE_REPLACE_ASCII);
+    chx_mode_set(CHX_MODE_REPLACE_ASCII);
 }
 
 void chx_mode_set_insert_ascii()
 {
-    chx_mode_set_x(CHX_MODE_INSERT_ASCII);
+    chx_mode_set(CHX_MODE_INSERT_ASCII);
 }
 
 void chx_mode_set_replace2_ascii()
 {
-    chx_mode_set_x(CHX_MODE_REPLACE2_ASCII);
+    chx_mode_set(CHX_MODE_REPLACE2_ASCII);
 }
 
 // }}}
@@ -155,7 +147,7 @@ void chx_clear_selection()
     if (CINST.show_preview) {
         chx_draw_sidebar();
     }
-    cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
+    cur_set(chx_cursor_x(), chx_cursor_y());
     fflush(stdout);
 }
 
@@ -220,9 +212,9 @@ void chx_exit_with_message(char* _msg)
     tcsetattr(0, TCSADRAIN, &old);
 
     // exit
-    cls();
+    printf(ANSI_ERASE_SCREEN);
     cur_set(0, 0);
-    texit();
+    system("tput rmcup"); // TODO
     printf(_msg);
     exit(0);
 }
@@ -236,9 +228,9 @@ void chx_exit()
     tcsetattr(0, TCSADRAIN, &old);
 
     // exit
-    cls();
+    printf(ANSI_ERASE_SCREEN);
     cur_set(0, 0);
-    texit();
+    system("tput rmcup"); // TODO
     exit(0);
 }
 
@@ -247,7 +239,7 @@ void chx_swap_endianness()
     CINST.endianness = !CINST.endianness;
     if (CINST.show_inspector) {
         chx_draw_extra();
-        cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
+        cur_set(chx_cursor_x(), chx_cursor_y());
         fflush(stdout);
     }
 }
@@ -276,7 +268,7 @@ void chx_set_endianness_global(char _np, char** _pl)
 
     if (CINST.show_inspector) {
         chx_draw_extra();
-        cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
+        cur_set(chx_cursor_x(), chx_cursor_y());
         fflush(stdout);
     }
 }
@@ -460,14 +452,14 @@ void chx_page_down()
 void chx_toggle_inspector()
 {
     CINST.show_inspector = !CINST.show_inspector;
-    cls();
+    printf(ANSI_ERASE_SCREEN);
     chx_draw_all();
 }
 
 void chx_toggle_preview()
 {
     CINST.show_preview = !CINST.show_preview;
-    cls();
+    printf(ANSI_ERASE_SCREEN);
     chx_draw_all();
 }
 
@@ -499,7 +491,7 @@ void chx_save()
     CINST.saved = 1;
     chx_export(CINST.fdata.filename);
     chx_draw_contents();
-    cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
+    cur_set(chx_cursor_x(), chx_cursor_y());
     fflush(stdout);
 }
 
@@ -519,7 +511,7 @@ void chx_save_as(char _np, char** _pl)
     CINST.saved = 1;
     chx_export(CINST.fdata.filename);
     chx_draw_contents();
-    cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
+    cur_set(chx_cursor_x(), chx_cursor_y());
     fflush(stdout);
 }
 
@@ -550,7 +542,7 @@ void chx_prompt_save_as()
     }
 
     // redraw elements
-    cls();
+    printf(ANSI_ERASE_SCREEN);
     chx_draw_all();
 }
 
@@ -694,7 +686,7 @@ void chx_config_layout(char _np, char** _pl)
         *prop_ptr = (str_to_num(_pl[1])) ? str_to_num(_pl[1]) : 1;
     }
 
-    cls();
+    printf(ANSI_ERASE_SCREEN);
     chx_draw_all();
 }
 
@@ -722,7 +714,7 @@ void chx_print_finfo()
     // print info and for key input to ocntinue
     cur_set(0, CINST.height);
     printf(ANSI_ERASE_LINE "'%s' %liB %iL %iC (offset: %#lx)", CINST.fdata.filename, CINST.fdata.len, nlc, chc, CINST.cursor.pos);
-    cur_set(CHX_CURSOR_X, CHX_CURSOR_Y);
+    cur_set(chx_cursor_x(), chx_cursor_y());
     fflush(stdout);
     chx_get_char();
 
@@ -796,7 +788,7 @@ void chx_quit()
                 break;
             default:
                 // erase save dialoge and redraw elements
-                cls();
+                printf(ANSI_ERASE_SCREEN);
                 chx_draw_all();
                 chx_main();
                 break;

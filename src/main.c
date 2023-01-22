@@ -3,9 +3,14 @@
  * Copyright 2023 Jorengarenar
  */
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <locale.h>
+
+#include <signal.h>
 
 #include "editor.h"
+#include "tui.h"
 #include "utils.h"
 #include "actions.h"
 
@@ -37,8 +42,8 @@ int main(int argc, char** argv)
     }
 
     // enter new terminal state
-    tenter();
-    cls();
+    system("tput smcup"); // TODO
+    printf(ANSI_ERASE_SCREEN);
 
     // disable key echoing
     struct termios old = { 0 };
@@ -53,16 +58,16 @@ int main(int argc, char** argv)
     // setup initial instance
     CHX_CUR_MAX_INSTANCE = -1;
     CHX_SEL_INSTANCE = 0;
-    CHX_INSTANCES = (struct CHX_INSTANCE*) calloc(sizeof (struct CHX_INSTANCE), CHX_MAX_NUM_INSTANCES);
+    CHX_INSTANCES = (struct Instance*) calloc(sizeof (struct Instance), CHX_MAX_NUM_INSTANCES);
 
     chx_add_instance(argv[1]);
 
     // only show preview or inspector if it will fit on the screen
-    CINST.show_inspector = (CHX_PREVIEW_END + 28 > CINST.width) ? 0 : CHX_SHOW_INSPECTOR_ON_STARTUP;
-    CINST.show_preview = (CHX_PREVIEW_END > CINST.width) ? 0 : CHX_SHOW_PREVIEW_ON_STARTUP;
+    CINST.show_inspector = (chx_preview_end() + 28 > CINST.width) ? 0 : CHX_SHOW_INSPECTOR_ON_STARTUP;
+    CINST.show_preview = (chx_preview_end() > CINST.width) ? 0 : CHX_SHOW_PREVIEW_ON_STARTUP;
 
     // if the screen cannot fit the contents, remove one byte until it can be displayed
-    while (CHX_CONTENT_END > CINST.width && CINST.bytes_per_row) {
+    while (chx_content_end() > CINST.width && CINST.bytes_per_row) {
         CINST.bytes_in_group = 1;
         CINST.bytes_per_row--;
     }
@@ -78,6 +83,6 @@ int main(int argc, char** argv)
     // call main loop
     chx_main();
 
-    texit();
+    system("tput rmcup"); // TODO
     return 0;
 }

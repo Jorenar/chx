@@ -10,7 +10,6 @@
 
 /* GLOBAL KEYBINDS (WORK IN ANY MODE) */
 void (*chx_keybinds_global[])(void) = {
-    [KEY_MAX_VAL] = fvoid, // do not remove
     [KEY_ESCAPE] = chx_mode_set_default,
     [KEY_UP] = chx_cursor_move_up,
     [KEY_DOWN] = chx_cursor_move_down,
@@ -44,7 +43,6 @@ void (*chx_keybinds_global[])(void) = {
 
 /* COMMAND MODE KEYBINDS */
 void (*chx_keybinds_mode_command[])(void) = {
-    [KEY_MAX_VAL] = fvoid, // do not remove
     ['h'] = chx_cursor_prev_byte,
     ['j'] = chx_cursor_move_down,
     ['k'] = chx_cursor_move_up,
