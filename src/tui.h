@@ -34,6 +34,6 @@ void chx_draw_sidebar();
 void chx_draw_extra();
 void chx_draw_header();
 void chx_draw_all();
-void chx_redraw_line();
+void chx_draw_line();
 
 #endif // TUI_H_

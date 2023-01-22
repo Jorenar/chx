@@ -36,7 +36,7 @@ void chx_scroll_up(int _n)
 {
     printf(ANSI_SU(%d), _n);
     while (_n--) {
-        chx_redraw_line(CINST.scroll_pos - _n + CINST.num_rows - 1);
+        chx_draw_line(CINST.scroll_pos - _n + CINST.num_rows - 1);
     }
     chx_draw_header();
     chx_print_status();
@@ -46,11 +46,12 @@ void chx_scroll_down(int _n)
 {
     printf(ANSI_SD(%d), _n);
     while (_n--) {
-        chx_redraw_line(CINST.scroll_pos + _n);
+        chx_draw_line(CINST.scroll_pos + _n);
     }
     chx_draw_header();
     chx_print_status();
 }
+
 
 void chx_update_cursor()
 {
@@ -91,9 +92,9 @@ void chx_update_cursor()
     CINST.sel_stop = CINST.cursor.pos;
     if (CINST.selected) {
         long p = CINST.cursor.pos / CINST.bytes_per_row;
-        chx_redraw_line(p - 1);
-        chx_redraw_line(p);
-        chx_redraw_line(p + 1);
+        chx_draw_line(p - 1);
+        chx_draw_line(p);
+        chx_draw_line(p + 1);
     }
 
     if (CINST.show_inspector) {
@@ -109,7 +110,7 @@ void chx_update_cursor()
     fflush(stdout);
 }
 
-void chx_redraw_line(long line)
+void chx_draw_line(long line)
 {
     // calculate line number
     long line_start = line * CINST.bytes_per_row;
@@ -296,50 +297,9 @@ void chx_draw_header()
 
 void chx_draw_contents()
 {
-    // print row numbers
-    for (int i = 0; i < CINST.num_rows; i++) {
-        cur_set(0, i + TPD);
-        printf(CHX_FRAME_COLOUR "%0*lX " ANSI_RESET "%-*c", CINST.row_num_len, (long) ((i + CINST.scroll_pos) * CINST.bytes_per_row), CINST.group_spacing, ' ');
+    for (long l = CINST.scroll_pos; l < CINST.scroll_pos + CINST.num_rows; ++l) {
+        chx_draw_line(l);
     }
-
-    printf(ANSI_RESET);
-
-    // print main contents
-    long sel_begin = min(CINST.sel_start, CINST.sel_stop);
-    long sel_end = max(CINST.sel_start, CINST.sel_stop);
-
-    if (CINST.selected && sel_begin < CINST.scroll_pos * CINST.bytes_per_row) {
-        printf(CHX_ASCII_SELECT_FORMAT);
-    }
-
-    for (long i = CINST.scroll_pos * CINST.bytes_per_row; i < CINST.scroll_pos * CINST.bytes_per_row + CINST.num_rows * CINST.bytes_per_row; i++) {
-        if (!(i % CINST.bytes_per_row)) {
-            printf("%-*c", CINST.group_spacing, ' ');
-            cur_set(CINST.row_num_len + CINST.group_spacing, CHX_GET_Y(i));
-        } else if (!(i % CINST.bytes_in_group) && CINST.group_spacing != 0) {
-            printf("%-*c", CINST.group_spacing, ' ');
-        }
-
-        if (CINST.selected && i == sel_begin && sel_end != sel_begin) {
-            printf(CHX_ASCII_SELECT_FORMAT);
-        }
-
-        if (i < CINST.fdata.len) {
-            if ((!CINST.selected || i < sel_begin || i >= sel_end) && CINST.style_data[i / 8] & (0x80 >> (i % 8))) {
-                printf(CHX_UNSAVED_COLOUR "%02X" ANSI_RESET, CINST.fdata.data[i]);
-            } else {
-                printf("%02X", CINST.fdata.data[i]);
-            }
-        } else {
-            printf("..");
-        }
-
-        if (CINST.selected && i == sel_end - 1) {
-            printf(ANSI_RESET);
-        }
-    }
-
-    printf(ANSI_RESET "%-*c", CINST.group_spacing, ' ');
 }
 
 void chx_draw_sidebar()

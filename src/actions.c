@@ -839,7 +839,7 @@ void chx_set_hexchar(char _c)
     CINST.saved = 0;
     CINST.style_data[CINST.cursor.pos / 8] |= 0x80 >> (CINST.cursor.pos % 8);
 
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
+    chx_draw_line(CINST.cursor.pos / CINST.bytes_per_row);
     chx_update_cursor();
 }
 
@@ -918,7 +918,7 @@ void chx_delete_hexchar()
         chx_draw_sidebar();
     }
 
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
+    chx_draw_line(CINST.cursor.pos / CINST.bytes_per_row);
     fflush(stdout);
 }
 
@@ -992,7 +992,7 @@ void chx_set_ascii(char _c)
         chx_draw_sidebar();
     }
 
-    chx_redraw_line(CINST.cursor.pos / CINST.bytes_per_row);
+    chx_draw_line(CINST.cursor.pos / CINST.bytes_per_row);
     fflush(stdout);
 }
 
