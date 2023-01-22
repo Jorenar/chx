@@ -70,6 +70,7 @@ void (*chx_keybinds_mode_command[])(void) = {
     ['q'] = chx_quit,
     ['.'] = chx_execute_last_action,
     ['^'] = chx_to_line_start,
+    ['0'] = chx_to_line_start,
     ['$'] = chx_to_line_end,
     [':'] = chx_prompt_command,
     [KEY_TAB] = foo,
