@@ -20,12 +20,7 @@ void chx_mode_set_default()
     if (CINST.selected) {
         chx_clear_selection();
     }
-    chx_mode_set(CHX_MODE_DEFAULT);
-}
-
-void chx_mode_set_replace()
-{
-    chx_mode_set(CHX_MODE_REPLACE);
+    chx_mode_set(CHX_MODE_NORMAL);
 }
 
 void chx_mode_set_visual()
@@ -35,27 +30,29 @@ void chx_mode_set_visual()
 
 void chx_mode_set_insert()
 {
-    chx_mode_set(CHX_MODE_INSERT);
+    if (!CINST.foo) {
+        chx_mode_set(CHX_MODE_INSERT);
+    } else {
+        chx_mode_set(CHX_MODE_INSERT_ASCII);
+    }
+}
+
+void chx_mode_set_replace()
+{
+    if (!CINST.foo) {
+        chx_mode_set(CHX_MODE_REPLACE);
+    } else {
+        chx_mode_set(CHX_MODE_REPLACE_ASCII);
+    }
 }
 
 void chx_mode_set_replace2()
 {
-    chx_mode_set(CHX_MODE_REPLACE2);
-}
-
-void chx_mode_set_replace_ascii()
-{
-    chx_mode_set(CHX_MODE_REPLACE_ASCII);
-}
-
-void chx_mode_set_insert_ascii()
-{
-    chx_mode_set(CHX_MODE_INSERT_ASCII);
-}
-
-void chx_mode_set_replace2_ascii()
-{
-    chx_mode_set(CHX_MODE_REPLACE2_ASCII);
+    if (!CINST.foo) {
+        chx_mode_set(CHX_MODE_REPLACE_SINGLE);
+    } else {
+        chx_mode_set(CHX_MODE_REPLACE_SINGLE_ASCII);
+    }
 }
 
 // }}}
@@ -1118,4 +1115,10 @@ void chx_erase_ascii()
         chx_cursor_prev_byte();
         chx_remove_ascii();
     }
+}
+
+void foo()
+{
+    CINST.foo = !CINST.foo;
+    chx_update_cursor();
 }

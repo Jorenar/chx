@@ -153,26 +153,26 @@ void chx_print_status()
     // print current mode setting
     cur_set(0, CINST.height);
     switch (CINST.mode) {
-        case CHX_MODE_DEFAULT:
-            printf(ANSI_ERASE_LINE "[ COMMAND ]");
-            break;
-        case CHX_MODE_REPLACE:
-            printf(ANSI_ERASE_LINE "[ REPLACE ]");
+        case CHX_MODE_NORMAL:
+            printf(ANSI_ERASE_LINE "[ NORMAL ]");
             break;
         case CHX_MODE_INSERT:
             printf(ANSI_ERASE_LINE "[ INSERT ]");
             break;
-        case CHX_MODE_REPLACE2:
-            printf(ANSI_ERASE_LINE "[ REPLACE2 ]");
+        case CHX_MODE_INSERT_ASCII:
+            printf(ANSI_ERASE_LINE "[ ASCII INSERT ]");
+            break;
+        case CHX_MODE_REPLACE:
+            printf(ANSI_ERASE_LINE "[ REPLACE ]");
             break;
         case CHX_MODE_REPLACE_ASCII:
             printf(ANSI_ERASE_LINE "[ ASCII REPLACE ]");
             break;
-        case CHX_MODE_INSERT_ASCII:
-            printf(ANSI_ERASE_LINE "[ ASCII INSERT ]");
+        case CHX_MODE_REPLACE_SINGLE:
+            printf(ANSI_ERASE_LINE "[ REPLACE SINGLE ]");
             break;
-        case CHX_MODE_REPLACE2_ASCII:
-            printf(ANSI_ERASE_LINE "[ ASCII REPLACE2 ]");
+        case CHX_MODE_REPLACE_SINGLE_ASCII:
+            printf(ANSI_ERASE_LINE "[ ASCII REPLACE SINGLE ]");
             break;
         default:
             printf(ANSI_ERASE_LINE "[ UNKNOWN ]");

@@ -6,6 +6,8 @@
 #ifndef EDITOR_H_
 #define EDITOR_H_
 
+#include <stdbool.h>
+
 #include <byteswap.h>
 #include <unistd.h>
 #include <limits.h>
@@ -15,14 +17,18 @@
 #include <ansi_esc_seq.h>
 
 enum Mode {
-    CHX_MODE_DEFAULT,
+    CHX_MODE_NORMAL,
+
     CHX_MODE_VISUAL,
-    CHX_MODE_REPLACE2,
+
     CHX_MODE_INSERT,
-    CHX_MODE_REPLACE,
-    CHX_MODE_REPLACE2_ASCII,
     CHX_MODE_INSERT_ASCII,
+
+    CHX_MODE_REPLACE,
     CHX_MODE_REPLACE_ASCII,
+
+    CHX_MODE_REPLACE_SINGLE,
+    CHX_MODE_REPLACE_SINGLE_ASCII,
 };
 
 #define CINST CHX_INSTANCES[CHX_SEL_INSTANCE]
@@ -100,6 +106,7 @@ struct Instance {
     char mode;
     char show_inspector;
     char show_preview;
+    bool foo;
 };
 
 extern struct Instance* CHX_INSTANCES;

@@ -9,7 +9,7 @@
 #define CHX_CTRL(C)   (C & 0x1F)
 #define CHX_ALT(C)    ((C & 0x00FF) | 0x0300)
 #define CHX_SHIFT(C)  ((C & 0x00FF) | 0x0200)
-#define CHX_CTRL_M(C) ((C & 0x00FF) | 0x0500)
+#define CHX_CTRL_M(C) ((C & 0x00FF) | 0x0500) // TODO: CTRL_M ?
 
 enum Keys {
     KEY_UP     = 0x0141,

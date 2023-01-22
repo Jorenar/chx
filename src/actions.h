@@ -10,9 +10,6 @@ void chx_mode_set_visual();
 void chx_mode_set_replace();
 void chx_mode_set_insert();
 void chx_mode_set_replace2();
-void chx_mode_set_replace_ascii();
-void chx_mode_set_insert_ascii();
-void chx_mode_set_replace2_ascii();
 
 void chx_cursor_move_vertical_by(int _n);
 void chx_cursor_move_horizontal_by(int _n);
@@ -84,5 +81,7 @@ void chx_delete_ascii();
 void chx_backspace_ascii();
 void chx_remove_ascii();
 void chx_erase_ascii();
+
+void foo();
 
 #endif // ACTIONS_H_

@@ -32,11 +32,8 @@ void* func_exceptions[] = {
     chx_cursor_prev_byte,
     chx_execute_last_action,
     chx_prompt_command,
-    chx_mode_set_replace_ascii,
     chx_mode_set_replace,
-    chx_mode_set_insert_ascii,
     chx_mode_set_insert,
-    chx_mode_set_replace2_ascii,
     chx_mode_set_replace2,
     chx_remove_selected,
     chx_delete_selected,
@@ -297,7 +294,7 @@ void chx_main()
 
         switch (CINST.mode) {
             default:
-            case CHX_MODE_DEFAULT:
+            case CHX_MODE_NORMAL:
                 // execute key sequence, if available
                 if (chx_keybinds_mode_command[WORD(key)]) {
                     chx_keybinds_mode_command[WORD(key)]();
@@ -339,11 +336,11 @@ void chx_main()
                     chx_erase_hexchar();
                 }
                 break;
-            case CHX_MODE_REPLACE2:
-                if (IS_CHAR_HEX(WORD(key))) {
-                    chx_set_hexchar(WORD(key));
+            case CHX_MODE_INSERT_ASCII:
+                if (IS_PRINTABLE(WORD(key))) {
+                    chx_insert_ascii(WORD(key));
                 } else if (WORD(key) == 0x7F) {
-                    chx_delete_hexchar();
+                    chx_erase_ascii();
                 }
                 break;
             case CHX_MODE_REPLACE:
@@ -353,25 +350,27 @@ void chx_main()
                     chx_backspace_hexchar();
                 }
                 break;
-            case CHX_MODE_INSERT_ASCII:
-                if (IS_PRINTABLE(WORD(key))) {
-                    chx_insert_ascii(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_erase_ascii();
-                }
-                break;
-            case CHX_MODE_REPLACE2_ASCII:
-                if (IS_PRINTABLE(WORD(key))) {
-                    chx_set_ascii(WORD(key));
-                } else if (WORD(key) == 0x7F) {
-                    chx_delete_ascii();
-                }
-                break;
             case CHX_MODE_REPLACE_ASCII:
                 if (IS_PRINTABLE(WORD(key))) {
                     chx_type_ascii(WORD(key));
                 } else if (WORD(key) == 0x7F) {
                     chx_backspace_ascii();
+                }
+                break;
+            case CHX_MODE_REPLACE_SINGLE:
+                if (IS_CHAR_HEX(WORD(key))) {
+                    chx_set_hexchar(WORD(key));
+                    chx_mode_set_default();
+                } else if (WORD(key) == 0x7F) {
+                    chx_delete_hexchar();
+                }
+                break;
+            case CHX_MODE_REPLACE_SINGLE_ASCII:
+                if (IS_PRINTABLE(WORD(key))) {
+                    chx_set_ascii(WORD(key));
+                    chx_mode_set_default();
+                } else if (WORD(key) == 0x7F) {
+                    chx_delete_ascii();
                 }
                 break;
         }
