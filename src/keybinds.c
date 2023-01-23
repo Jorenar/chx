@@ -8,8 +8,10 @@
 #include "actions.h"
 #include "interpreter.h"
 
+#define KEYBINDS_ARRAY_SIZE  0xFFFF + 1
+
 /* GLOBAL KEYBINDS (WORK IN ANY MODE) */
-void (*chx_keybinds_global[])(void) = {
+void (*chx_keybinds_global[KEYBINDS_ARRAY_SIZE])(void) = {
     [KEY_ESCAPE] = chx_mode_set_default,
     [KEY_UP] = chx_cursor_move_up,
     [KEY_DOWN] = chx_cursor_move_down,
@@ -38,7 +40,7 @@ void (*chx_keybinds_global[])(void) = {
 };
 
 /* COMMAND MODE KEYBINDS */
-void (*chx_keybinds_mode_command[])(void) = {
+void (*chx_keybinds_mode_command[KEYBINDS_ARRAY_SIZE])(void) = {
     ['h'] = chx_cursor_move_left,
     ['j'] = chx_cursor_move_down,
     ['l'] = chx_cursor_move_right,
@@ -70,7 +72,7 @@ void (*chx_keybinds_mode_command[])(void) = {
     [KEY_TAB] = foo,
 };
 
-void (*chx_keybinds_mode_visual[])(void) = {
+void (*chx_keybinds_mode_visual[KEYBINDS_ARRAY_SIZE])(void) = {
     ['h'] = chx_cursor_move_left,
     ['j'] = chx_cursor_move_down,
     ['l'] = chx_cursor_move_right,
