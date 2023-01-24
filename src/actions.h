@@ -27,8 +27,6 @@ void chx_start_selection();
 void chx_clear_selection();
 void chx_exit_with_message(char* _msg);
 void chx_exit();
-void chx_swap_endianness();
-void chx_set_endianness_global(char _np, char** _pl);
 void chx_resize_file(long _n);
 void chx_to_line_start();
 void chx_to_line_end();

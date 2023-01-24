@@ -180,45 +180,6 @@ void chx_exit()
     exit(0);
 }
 
-void chx_swap_endianness()
-{
-    CINST.endianness = !CINST.endianness;
-    if (CINST.show_inspector) {
-        chx_draw_extra();
-        cur_set(chx_cursor_x(), chx_cursor_y());
-        fflush(stdout);
-    }
-}
-
-void chx_set_endianness_global(char _np, char** _pl)
-{
-    if (!_np) {
-        return;
-    }
-    switch (_pl[0][0]) {
-        case 'l':
-        case 'L':
-            for (int i = 0; i <= CHX_CUR_MAX_INSTANCE; i++) {
-                CHX_INSTANCES[i].endianness = 1;
-            }
-            break;
-        case 'b':
-        case 'B':
-            for (int i = 0; i <= CHX_CUR_MAX_INSTANCE; i++) {
-                CHX_INSTANCES[i].endianness = 0;
-            }
-            break;
-        default:
-            return;
-    }
-
-    if (CINST.show_inspector) {
-        chx_draw_extra();
-        cur_set(chx_cursor_x(), chx_cursor_y());
-        fflush(stdout);
-    }
-}
-
 void chx_resize_file(long _n)
 {
     CINST.fdata.data = recalloc(CINST.fdata.data, CINST.fdata.len, _n);

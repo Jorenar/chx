@@ -21,17 +21,14 @@ int chx_cursor_y();
 #define CHX_GET_X(X) (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * ((X % CINST.bytes_per_row) / CINST.bytes_in_group) + 2 * (X % CINST.bytes_in_group) + CINST.group_spacing)
 #define CHX_GET_Y(X) (int) (X / CINST.bytes_per_row - CINST.scroll_pos + TPD)
 
-#define BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-
 void chx_scroll_up(int _n);
 void chx_scroll_down(int _n);
 
 void chx_print_status();
 void chx_update_cursor();
-void chx_swap_endianness();
 void chx_draw_contents();
 void chx_draw_sidebar();
-void chx_draw_extra();
+void chx_draw_data_inspector();
 void chx_draw_header();
 void chx_draw_all();
 void chx_draw_line();

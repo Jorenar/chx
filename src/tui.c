@@ -9,6 +9,7 @@
 
 #include "editor.h"
 #include "utils.h"
+#include "data_inspector.h"
 
 
 int chx_content_end()
@@ -98,7 +99,7 @@ void chx_update_cursor()
     }
 
     if (CINST.show_inspector) {
-        chx_draw_extra();
+        chx_draw_data_inspector();
     }
 
     if (CINST.show_preview) {
@@ -193,68 +194,6 @@ void chx_print_status()
     printf(" I%02i '%s' (%li bytes)", CHX_SEL_INSTANCE, CINST.fdata.filename, CINST.fdata.len);
 }
 
-void chx_draw_extra()
-{
-    // copy bytes from file
-    char buf[16];
-    for (long i = 0; i < 16; i++) {
-        if (CINST.cursor.pos + i < CINST.fdata.len) {
-            buf[i] = CINST.fdata.data[CINST.cursor.pos + i];
-        } else {
-            buf[i] = 0;
-        }
-    }
-
-    int offset = (CINST.show_preview) ? chx_preview_end() : chx_content_end();
-
-    // clear bit of screen
-    cur_set(offset - 1, 0);
-    for (int i = 0; i < CINST.num_rows + PD; i++) {
-        printf(ANSI_ERASE_CUR2EOL ANSI_CHA(%d) ANSI_CUD(1), offset);
-    }
-
-    // print inspected data
-    cur_set(offset, 0);
-    printf(ANSI_BOLD);
-    printf(ANSI_ERASE_CUR2EOL "Data Inspector:");
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "binary: " BINARY_PATTERN, BYTE_TO_BINARY(buf[0]));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "int8: %i", INT8_AT(&buf));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "int16: %i", (CINST.endianness) ? INT16_AT(&buf) : __bswap_16 (INT16_AT(&buf)));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "int32: %i", (CINST.endianness) ? INT32_AT(&buf) : __bswap_32 (INT32_AT(&buf)));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "int64: %li", (CINST.endianness) ? INT64_AT(&buf) : __bswap_64 (INT64_AT(&buf)));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "uint8: %u", UINT8_AT(&buf));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "uint16: %u", (CINST.endianness) ? UINT16_AT(&buf) : __bswap_16 (UINT16_AT(&buf)));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "uint32: %u", (CINST.endianness) ? UINT32_AT(&buf) : __bswap_32 (UINT32_AT(&buf)));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "uint64: %lu", (CINST.endianness) ? UINT64_AT(&buf) : __bswap_64 (UINT64_AT(&buf)));
-
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "ANSI char: ");
-    print_ascii_char(buf[0]);
-
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "utf-8: ");
-    print_utf8(buf);
-
-    printf(ANSI_CHA(%d) ANSI_CUD(1) " ", offset);
-    printf(ANSI_ERASE_CUR2EOL "wide char: %lc", (CINST.endianness) ? WCHAR_AT(&buf) : __bswap_16 (WCHAR_AT(&buf)));
-    printf(ANSI_CHA(%d) ANSI_CUD(1) ANSI_ERASE_CUR2EOL ANSI_CUD(1) " ", offset);
-    if (CINST.endianness) {
-        printf(ANSI_ERASE_CUR2EOL "[LITTLE ENDIAN]");
-    } else {
-        printf(ANSI_ERASE_CUR2EOL "[BIG ENDIAN]");
-    }
-    printf(ANSI_RESET);
-}
-
 void chx_draw_all()
 {
     // draw elements
@@ -266,7 +205,7 @@ void chx_draw_all()
     }
 
     if (CINST.show_inspector) {
-        chx_draw_extra();
+        chx_draw_data_inspector();
     }
 
     chx_print_status();

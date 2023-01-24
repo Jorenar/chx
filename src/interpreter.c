@@ -11,7 +11,6 @@ struct chx_void_command chx_void_commands[] = {
     (struct chx_void_command) { chx_print_finfo, "get-info" },
     (struct chx_void_command) { chx_toggle_inspector, "ti" },
     (struct chx_void_command) { chx_toggle_preview, "tp" },
-    (struct chx_void_command) { chx_swap_endianness, "se" },
     (struct chx_void_command) { chx_prompt_save_as, "saveas" },
     (struct chx_void_command) { chx_exit, "exit" },
     (struct chx_void_command) { chx_exit, "q!" },
@@ -25,7 +24,6 @@ struct chx_void_command chx_void_commands[] = {
 /* INTERPRETER COMMANDS (WITH PARAMS) */
 struct chx_command chx_commands[] = {
     (struct chx_command) { chx_set_inst, "to" },
-    (struct chx_command) { chx_set_endianness_global, "ge" },
     (struct chx_command) { chx_save_as, "save" },
     (struct chx_command) { chx_save_as, "sav" },
     (struct chx_command) { chx_save_as, "w" },

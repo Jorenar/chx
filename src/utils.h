@@ -19,27 +19,7 @@
 #define IS_DIGIT(C)     ((C ^ 0x30) < 10)
 #define IS_QUOTATION(C) (C == '\'' || C == '"')
 
-#define WORD(X)      *((uint16_t*) &X)
-#define DWORD(X)     *((uint32_t*) &X)
-#define INT8_AT(X)   *((int8_t  *) (X))
-#define INT16_AT(X)  *((int16_t *) (X))
-#define INT32_AT(X)  *((int32_t *) (X))
-#define INT64_AT(X)  *((int64_t *) (X))
-#define UINT8_AT(X)  *((uint8_t *) (X))
-#define UINT16_AT(X) *((uint16_t*) (X))
-#define UINT32_AT(X) *((uint32_t*) (X))
-#define UINT64_AT(X) *((uint64_t*) (X))
-#define WCHAR_AT(X)  (wchar_t) *((int16_t*) (X))
-
-#define BYTE_TO_BINARY(byte) \
-    (byte & 0x80 ? '1' : '0'), \
-    (byte & 0x40 ? '1' : '0'), \
-    (byte & 0x20 ? '1' : '0'), \
-    (byte & 0x10 ? '1' : '0'), \
-    (byte & 0x08 ? '1' : '0'), \
-    (byte & 0x04 ? '1' : '0'), \
-    (byte & 0x02 ? '1' : '0'), \
-    (byte & 0x01 ? '1' : '0')
+#define WORD(X) *((uint16_t*) &X)
 
 long chx_abs(long _n);
 long min(long _a, long _b);
@@ -54,8 +34,5 @@ long str_to_hex(char* _s);
 int str_len(char* _s);
 char cmp_str(char* _a, char* _b);
 char* chx_extract_param(char* _s, int _n);
-
-void print_ascii_char(char ch);
-void print_utf8(char* bbb);
 
 #endif // UTILS_H_

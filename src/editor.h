@@ -100,7 +100,6 @@ struct Instance {
     long sel_start;
     long sel_stop;
     char parity;
-    char endianness;
     char selected;
     char saved;
     char mode;
@@ -118,13 +117,7 @@ extern void* func_exceptions[];
 
 // TODO move to config
 
-enum Endianness {
-    CHX_LITTLE_ENDIAN = 1,
-    CHX_BIG_ENDIAN = 0,
-};
-
 /* GENERAL SETTINGS */
-#define CHX_DEFAULT_ENDIANNESS         CHX_LITTLE_ENDIAN // TODO: detect programmically
 #define CHX_SHOW_PREVIEW_ON_STARTUP    1 // (bool) can be overridden if screen is small
 #define CHX_SHOW_INSPECTOR_ON_STARTUP  1 // (bool) can be overridden if screen is small
 #define CHX_MAX_NUM_INSTANCES          8 // max number of files open at a time

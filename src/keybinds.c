@@ -28,7 +28,6 @@ void (*chx_keybinds_global[KEYBINDS_ARRAY_SIZE])(void) = {
     [CHX_CTRL('y')] = chx_copy,
     [CHX_CTRL('p')] = chx_paste_after,
     [CHX_SHIFT(CHX_CTRL('p'))] = chx_paste_before,
-    [CHX_CTRL('e')] = chx_swap_endianness,
     [CHX_CTRL('w')] = chx_prompt_save_as,
     [CHX_CTRL('u')] = chx_revert,
     [CHX_CTRL('x')] = chx_exit,

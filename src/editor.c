@@ -229,7 +229,6 @@ void chx_add_instance(char* fpath)
     CINST.group_spacing = CHX_GROUP_SPACING;
     CINST.min_row_num_len = CINST.row_num_len = CHX_MIN_ROW_NUM_LEN;
     CINST.num_rows = size.ws_row - PD;
-    CINST.endianness = CHX_DEFAULT_ENDIANNESS;
     CINST.last_action.action.execute_void = fvoid;
     CINST.last_action.params = NULL;
     CINST.last_action.params_raw = NULL;
