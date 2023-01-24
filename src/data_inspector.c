@@ -74,6 +74,7 @@ static const char* const special_ascii[128] = {
     [0x1E] = "RS",
     [0x1F] = "US",
     [0x7F] = "DEL",
+    ['\''] = "'\\''",
 };
 
 static void print_char(char ch)
@@ -137,7 +138,6 @@ static void print_numbers(char buf[], bool le, int offset)
     }
 
     pco(offset); printf("wchar: "); print_wchar(wch);
-    pco(offset); printf("utf-8: "); print_utf8(buf);
 
     pco(offset); printf("i8:  %11i 0x%hhX", i8,  i8);
     pco(offset); printf("i16: %11i 0x%hX",  i16, i16);
@@ -150,13 +150,9 @@ static void print_numbers(char buf[], bool le, int offset)
 void chx_draw_data_inspector()
 {
     // copy bytes from file
-    char buf[5];
-    for (int i = 0; i < 5; ++i) {
-        if (CINST.cursor.pos + i < CINST.fdata.len) {
-            buf[i] = CINST.fdata.data[CINST.cursor.pos + i];
-        } else {
-            buf[i] = 0;
-        }
+    char buf[5] = { 0 };
+    for (int i = 0; i < 5 && CINST.cursor.pos + i < CINST.fdata.len; ++i) {
+        buf[i] = CINST.fdata.data[CINST.cursor.pos + i];
     }
 
     int offset = (CINST.show_preview) ? chx_preview_end() : chx_content_end();
@@ -174,9 +170,8 @@ void chx_draw_data_inspector()
     pco(offset);
     printf("bin: %c%c%c%c%c%c%c%c", BYTE_TO_BINARY(buf[0]));
 
-    pco(offset);
-    printf("char: ");
-    print_char(buf[0]);
+    pco(offset); printf("char:  "); print_char(buf[0]);
+    pco(offset); printf("utf-8: "); print_utf8(buf);
 
     pco(offset); // print LITTLE ENDIAN
     print_numbers(buf, true, offset);
