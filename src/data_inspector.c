@@ -6,8 +6,10 @@
 #include "data_inspector.h"
 
 #include <stdio.h>
+#include <wchar.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <wctype.h>
 
 #include <byteswap.h> // TODO: find platform independent solution?
 
@@ -90,8 +92,13 @@ static void print_char(char ch)
 
 static void print_wchar(wchar_t wch)
 {
-    printf("'%lc'", wch);
-    // TODO
+    if (wch >= 0 && wch <= 127 && special_ascii[wch]) {
+        printf("%s", special_ascii[wch]);
+    } else if (iswprint(wch)) {
+        printf("'%lc'", wch);
+    } else {
+        printf("\ufffd");
+    }
 }
 
 static void print_utf8(char* bbb)

@@ -43,7 +43,7 @@ void* func_exceptions[] = {
     chx_switch_file,
 };
 
-void fvoid() {};
+void fvoid(void) {}
 
 struct chx_finfo chx_import(char* fpath)
 {
