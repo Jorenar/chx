@@ -47,35 +47,41 @@ debug: CFLAGS = $(CSTDFLAG)
 debug: CFLAGS += \
 	-pedantic \
 	-DDEBUG=1 \
-	-g3 -Og \
+	-g3 -O0 \
 	-Wall -Wextra
 debug: CFLAGS += \
 	-masm=intel \
 	-fverbose-asm \
 	-save-temps -dumpbase $(DUMPDIR)/$(*F)
 debug: CFLAGS += \
-	-Wshadow \
+	-fsanitize=address,undefined,leak,signed-integer-overflow \
+	-fno-omit-frame-pointer
+debug: CFLAGS += \
 	-Wcast-qual \
-	-Wnested-externs \
-	-Wfloat-equal \
+	-Wcast-align \
+	-Wdouble-promotion
+debug: CFLAGS += \
 	-Wlogical-op \
-	-Wmissing-braces \
-	-Wpointer-arith \
-	-Wsequence-point \
+	-Wfloat-equal
+debug: CFLAGS += \
 	-Wformat=2 \
 	-Wwrite-strings
 debug: CFLAGS += \
 	-Winline \
 	-Wmissing-prototypes \
 	-Wstrict-prototypes \
-	-Wold-style-definition
-debug: CFLAGS += \
+	-Wold-style-definition \
 	-Werror=implicit-function-declaration \
-	-Werror=init-self \
 	-Werror=return-type
 debug: CFLAGS += \
-	-fsanitize=address,undefined,leak,signed-integer-overflow \
-	-fno-omit-frame-pointer
+	-Wshadow \
+	-Wnested-externs \
+	-Wmissing-braces \
+	-Werror=init-self
+debug: CFLAGS += \
+	-Wnull-dereference \
+	-Wsequence-point \
+	-Wpointer-arith
 
 debug: LDFLAGS =
 debug: STDERR_REDIR := 2> >(tee -a $(BUILD)/stderr.log >&2)
