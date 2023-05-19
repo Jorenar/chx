@@ -82,6 +82,8 @@ debug: CFLAGS += \
 	-Wnull-dereference \
 	-Wsequence-point \
 	-Wpointer-arith
+debug: CFLAGS += \
+	-Werror=misleading-indentation
 
 debug: LDFLAGS =
 debug: STDERR_REDIR := 2> >(tee -a $(BUILD)/stderr.log >&2)
@@ -90,8 +92,8 @@ debug: build
 
 
 compile_commands.json:
-	@ $(MAKE) --always-make --dry-run debug \
+	@ $(MAKE) --always-make --dry-run build \
 		| grep -wE -e '$(CC)' \
 		| grep -w -e '\-c' -e '\-x' \
-		| jq -nR '[inputs|{directory:"'$$PWD'", command:., file: match(" [^ ]+$$").string[1:]}]' \
+		| jq -nR '[inputs|{directory:"'$$PWD'", command:., file: match("(?<=-c )\\S+").string}]' \
 		> compile_commands.json
