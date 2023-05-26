@@ -69,7 +69,7 @@ void chx_export(char* fpath)
     fclose(outf);
 }
 
-struct chx_key chx_get_key()
+struct chx_key chx_get_key(void)
 {
     struct chx_key key;
     char buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -109,7 +109,7 @@ struct chx_key chx_get_key()
     return key;
 }
 
-char chx_get_char()
+char chx_get_char(void)
 {
     char buf;
 
@@ -267,7 +267,7 @@ void chx_remove_instance(int _n)
     }
 }
 
-void chx_main()
+void chx_main(void)
 {
     for (struct chx_key key;; key = chx_get_key()) {
         // execute key sequence, if available

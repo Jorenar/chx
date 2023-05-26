@@ -5,6 +5,6 @@
 #ifndef DATA_INSPECTOR_H_
 #define DATA_INSPECTOR_H_
 
-void chx_draw_data_inspector();
+void chx_draw_data_inspector(void);
 
 #endif // DATA_INSPECTOR_H_

@@ -12,22 +12,22 @@
 #include "data_inspector.h"
 
 
-int chx_content_end()
+int chx_content_end(void)
 {
     return (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * (CINST.bytes_per_row / CINST.bytes_in_group) + CINST.group_spacing);
 }
 
-int chx_preview_end()
+int chx_preview_end(void)
 {
     return (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * (CINST.bytes_per_row / CINST.bytes_in_group) + 2 * CINST.group_spacing + CINST.bytes_per_row);
 }
 
-int chx_cursor_x()
+int chx_cursor_x(void)
 {
     return (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * ((CINST.cursor.pos % CINST.bytes_per_row) / CINST.bytes_in_group) + 2 * (CINST.cursor.pos % CINST.bytes_in_group) + CINST.cursor.sbpos + CINST.group_spacing);
 }
 
-int chx_cursor_y()
+int chx_cursor_y(void)
 {
     return (CINST.cursor.pos / CINST.bytes_per_row - CINST.scroll_pos + TPD);
 }
@@ -54,7 +54,7 @@ void chx_scroll_down(int _n)
 }
 
 
-void chx_update_cursor()
+void chx_update_cursor(void)
 {
     CINST.cursor.line = CINST.cursor.pos / CINST.bytes_per_row;
     if (CINST.cursor.pos < 0) {
@@ -161,7 +161,7 @@ void chx_draw_line(long line)
     cur_set(chx_cursor_x(), chx_cursor_y());
 }
 
-void chx_print_status()
+void chx_print_status(void)
 {
     // print current mode setting
     cur_set(0, CINST.height);
@@ -194,7 +194,7 @@ void chx_print_status()
     printf(" I%02i '%s' (%li bytes)", CHX_SEL_INSTANCE, CINST.fdata.filename, CINST.fdata.len);
 }
 
-void chx_draw_all()
+void chx_draw_all(void)
 {
     // draw elements
     chx_draw_header();
@@ -215,7 +215,7 @@ void chx_draw_all()
     fflush(stdout);
 }
 
-void chx_draw_header()
+void chx_draw_header(void)
 {
     int rnum_digits = chx_count_digits((CINST.scroll_pos + CINST.num_rows) * CINST.bytes_per_row - 1);
     int rnl_old = CINST.row_num_len;
@@ -237,14 +237,14 @@ void chx_draw_header()
     printf(ANSI_RESET);
 }
 
-void chx_draw_contents()
+void chx_draw_contents(void)
 {
     for (long l = CINST.scroll_pos; l < CINST.scroll_pos + CINST.num_rows; ++l) {
         chx_draw_line(l);
     }
 }
 
-void chx_draw_sidebar()
+void chx_draw_sidebar(void)
 {
     // clear bit of screen if inspector is off
     if (!CINST.show_inspector) {

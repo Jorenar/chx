@@ -154,7 +154,7 @@ static void print_numbers(char buf[], bool le, int offset)
     pco(offset); printf("u32: %11u 0x%X",   u32, u32);
 }
 
-void chx_draw_data_inspector()
+void chx_draw_data_inspector(void)
 {
     // copy bytes from file
     char buf[5] = { 0 };

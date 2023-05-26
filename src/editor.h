@@ -42,13 +42,13 @@ void chx_config_layout_global(char _np, char** _pl);
 void chx_add_instance(char* fpath);
 void chx_remove_instance(int _n);
 
-struct chx_key chx_get_key();
-char chx_get_char();
-void chx_get_str();
+struct chx_key chx_get_key(void);
+char chx_get_char(void);
+void chx_get_str(char* _buf, int _len);
 
 void chx_mode_set(enum Mode m);
 
-void chx_main();
+void chx_main(void);
 
 union chx_last_action_ptr {
     void (*execute_void)(void);

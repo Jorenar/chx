@@ -12,10 +12,10 @@
 
 #define CHX_SCROLL_SUPPORT // TODO programically
 
-int chx_content_end();
-int chx_preview_end();
-int chx_cursor_x();
-int chx_cursor_y();
+int chx_content_end(void);
+int chx_preview_end(void);
+int chx_cursor_x(void);
+int chx_cursor_y(void);
 
 // TODO check if needed
 #define CHX_GET_X(X) (int) (CINST.row_num_len + (CINST.bytes_in_group * 2 + CINST.group_spacing) * ((X % CINST.bytes_per_row) / CINST.bytes_in_group) + 2 * (X % CINST.bytes_in_group) + CINST.group_spacing)
@@ -24,13 +24,13 @@ int chx_cursor_y();
 void chx_scroll_up(int _n);
 void chx_scroll_down(int _n);
 
-void chx_print_status();
-void chx_update_cursor();
-void chx_draw_contents();
-void chx_draw_sidebar();
-void chx_draw_data_inspector();
-void chx_draw_header();
-void chx_draw_all();
-void chx_draw_line();
+void chx_print_status(void);
+void chx_update_cursor(void);
+void chx_draw_contents(void);
+void chx_draw_sidebar(void);
+void chx_draw_data_inspector(void);
+void chx_draw_header(void);
+void chx_draw_all(void);
+void chx_draw_line(long line);
 
 #endif // TUI_H_
