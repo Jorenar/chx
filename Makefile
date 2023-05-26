@@ -76,13 +76,17 @@ debug: CFLAGS += \
 debug: CFLAGS += \
 	-Wshadow \
 	-Wnested-externs \
-	-Wmissing-braces \
 	-Werror=init-self
 debug: CFLAGS += \
 	-Wnull-dereference \
+	-Wchar-subscripts \
 	-Wsequence-point \
 	-Wpointer-arith
 debug: CFLAGS += \
+	-Wduplicated-cond \
+	-Wduplicated-branches
+debug: CFLAGS += \
+	-Werror=missing-braces \
 	-Werror=misleading-indentation
 
 debug: LDFLAGS =
