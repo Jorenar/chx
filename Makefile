@@ -90,7 +90,7 @@ debug: CFLAGS += \
 	-Werror=misleading-indentation
 
 debug: LDFLAGS =
-debug: STDERR_REDIR := 2> >(tee -a $(BUILD)/stderr.log >&2)
+debug: STDERR_REDIR := 2>&1 | tee -a $(BUILD)/stderr.log
 
 debug: build
 
