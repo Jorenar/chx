@@ -678,7 +678,7 @@ void chx_save_and_quit(void)
     chx_exit();
 }
 
-void chx_quit(void)
+void chx_quit()
 {
     chx_draw_all();
 

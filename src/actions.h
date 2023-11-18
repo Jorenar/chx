@@ -59,7 +59,7 @@ void chx_print_finfo(void);
 void chx_remove_selected(void);
 void chx_delete_selected(void);
 void chx_save_and_quit(void);
-void chx_quit(void);
+void chx_quit();
 void chx_prompt_command(void);
 void chx_set_hexchar(char _c);
 void chx_type_hexchar(char _c);
