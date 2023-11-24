@@ -22,13 +22,13 @@ BINDIR   := $(BUILD)/bin
 DEPSDIR  := $(BUILD)/deps
 DUMPDIR  := $(BUILD)/dump
 
-CFLAGS   := -std=c99
-CPPFLAGS := -I extern/ANSI_Esc_Seq
+override CFLAGS   += -std=c99
+override CPPFLAGS += -I extern/ANSI_Esc_Seq
 
-LDFLAGS  :=
-LDLIBS   :=
+override LDFLAGS  +=
+override LDLIBS   +=
 
-SANS := address bounds leak signed-integer-overflow undefined unreachable
+override SANS += address bounds leak signed-integer-overflow undefined unreachable
 
 LIBS :=
 
@@ -97,9 +97,11 @@ dev: CFLAGS += \
 	-Walloca \
 	-Werror=vla-larger-than=0
 dev: CFLAGS += \
+	-Werror=parentheses \
 	-Werror=missing-braces \
 	-Werror=misleading-indentation
 dev: CFLAGS += \
+	-g \
 	-fno-omit-frame-pointer \
 	-fsanitize=$(subst $(eval) ,$(shell echo ","),$(SANS))
 dev: build
