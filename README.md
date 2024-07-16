@@ -2,6 +2,12 @@
 A lightweight terminal hex editor.  
 usage: `chx <filepath>`
 
+---
+
+A fork of [nicholascok/CHX](https://github.com/nicholascok/CHX)
+
+<!--
+
 ## Quickstart Guide
 to install chx:  
 `git clone https://github.com/nicholascok/CHX.git chx`  
@@ -172,3 +178,5 @@ to remove source files:
 ## Exclusion List
   By default, CHX stores the function pointer of your previous action (function called by key press or interpreter command entered).
   To exclude a function from being set as your last action, add it to the exclusion list in config.h.
+
+-->
