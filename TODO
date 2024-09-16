@@ -1,3 +1,6 @@
 Resources:
   https://c-faq.com/osdep/sd22.html
   https://github.com/fr0zn/hed
+
+Investigate use of libvim:
+  https://github.com/onivim/libvim
